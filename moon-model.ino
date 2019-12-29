@@ -110,6 +110,7 @@ void loop()
     tft.clear();
     drawMoonOutline();
     drawLightBody(lunar.phaseDecimal);
+    drawIlluminatedMoonOutline(lunar.illuminatedFraction);
     // tft.drawPixel(moonLeft, moonCenterY, COLOR_BLUE);
     // tft.drawPixel(moonRight, moonCenterY, COLOR_ORANGE);
     // tft.drawPixel(moonCenterX, moonTop, COLOR_GREEN);
@@ -124,13 +125,13 @@ void loop()
 
     //    NEED TO LEARN TRIG
     // single outer outline
-    for (int i = 90; i > -90; i--)
-    {
-      double radians = i * PI / 180;
-      double px = moonCenterX + moonRadius * cos(radians);
-      double py = moonCenterY + moonRadius * sin(radians);
-      tft.drawPixel(px, py, COLOR_MAGENTA);
-    };
+    // for (int i = 90; i > -90; i--)
+    // {
+    //   double radians = i * PI / 180;
+    //   double px = moonCenterX + moonRadius * cos(radians);
+    //   double py = moonCenterY + moonRadius * sin(radians);
+    //   tft.drawPixel(px, py, COLOR_WHITE);
+    // };
 
     // Thin outer circular layer
     // for (int rx = (moonRadius - (15 * lunar.illuminatedFraction)); rx < moonRadius; rx++)
@@ -224,10 +225,15 @@ void initialize()
 
 void drawProjectionShape(float phaseDecimal, uint16_t color)
 {
-  // no smaller than 2Radius
-  // 1 Radius + 1 Radius * 4phaseDecimal
+  // no smaller than 1Radius
+  // 1 Radius + 1 Radius * 8phaseDecimal
   float projectionSize = max(moonRadius, moonRadius + (moonRadius * (phaseDecimal * 8)));
-  for (int rx = 0; rx < projectionSize; rx += 1)
+  Serial.println("*** proj size: ");
+  Serial.println(projectionSize);
+
+  // Increment faster to speed up draw time when projectionSize is very large
+  // ...until paintbrush touches moon (than increment normally)
+  for (int rx = 0; rx < projectionSize; (projectionSize > (moonRadius * 2) && rx < (projectionSize - (moonRadius * 2))) ? rx += (projectionSize / 4) : rx += 1)
   {
     for (int i = 0; i < 360; i++)
     {
@@ -250,8 +256,8 @@ void drawLightBody(float phaseDecimal)
   if ((phaseDecimal < 0.25) || (phaseDecimal > 0.75 && phaseDecimal < 1) || (phaseDecimal > 0.5 - fullMoonOrb && phaseDecimal < 0.5 + fullMoonOrb))
   {
 
-    drawProjectionShape(phaseDecimal, COLOR_BLACK);
     tft.fillCircle(moonCenterX, moonCenterY, moonRadius, COLOR_WHITE);
+    drawProjectionShape(phaseDecimal, COLOR_BLACK);
   }
   else
   {
@@ -263,6 +269,22 @@ void drawMoonOutline()
 {
   tft.drawCircle(moonCenterX, moonCenterY, moonRadius, COLOR_WHITE);
 };
+
+void drawIlluminatedMoonOutline(float illuminatedFraction)
+{
+  // Thin outer circular layer
+  // for (int rx = (moonRadius - (15 * illuminatedFraction)); rx < moonRadius; rx++)
+  // {
+  for (int i = (-90 * (illuminatedFraction * 4)); i < (90 * (illuminatedFraction * 4)); i++)
+  {
+    double radians = i * PI / 180;
+    double px = moonCenterX + moonRadius * cos(radians);
+    double py = moonCenterY + moonRadius * sin(radians);
+
+    tft.drawPixel(px, py, COLOR_WHITE);
+  };
+  // };
+}
 
 void printSign(LunarPhaseMeasures lunar)
 {
