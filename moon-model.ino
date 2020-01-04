@@ -8,25 +8,21 @@
 #include "drawMoon.hpp"
 #include <DS1307RTC.h>
 
-#include <Adafruit_GFX.h>    // Core graphics library
+// #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
 #include <SPI.h>
 
-#define TFT_CLK 13  // SCK A5 // 13
-#define TFT_POCI 11 // SDI / SDA / A4 // 11
+// #define TFT_CLK 13  // SCK A5 // 13
+// #define TFT_POCI 11 // SDI / SDA / A4 // 11
 #define TFT_CS 10
 #define TFT_RST 9
-#define TFT_DC 8   // RS
-#define TFT_PICO 0 // SDI / SDA / A4 // 11
-#define TFT_LED 0  // 0 if wired to +5V directly
-#define TFT_BRIGHTNESS 200
+#define TFT_DC 8 // RS
+// #define TFT_PICO 0 // SDI / SDA / A4 // 11
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-// Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_POCI, TFT_CLK, TFT_RST, TFT_PICO);
-//Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
 
-const uint8_t UPDATE_SPEED = 1; // seconds
-uint8_t secondCounter = 0;      // counts seconds until update calc/paint
+const uint8_t UPDATE_SPEED = 10; // seconds
+uint8_t secondCounter = 0;       // counts seconds until update calc/paint
 
 DrawConstants drawConstants;
 
@@ -37,13 +33,13 @@ void setup()
   Serial.begin(9600);
   RTC.write(tm);
 
-  Serial.println("Beginning!");
-  Serial.println("********************");
-  Serial.println("Dimensions: ");
-  Serial.print("X: ");
-  Serial.println(tft.width());
-  Serial.print("Y: ");
-  Serial.println(tft.height());
+  // Serial.println("Beginning!");
+  // Serial.println("********************");
+  // Serial.println("Dimensions: ");
+  // Serial.print("X: ");
+  // Serial.println(tft.width());
+  // Serial.print("Y: ");
+  // Serial.println(tft.height());
 
   initialize();
 }
@@ -54,44 +50,13 @@ void loop()
   int lastSecond = tm.Second;
   RTC.read(tm);
 
-  int sensorIlluminationValue = analogRead(A0);
-  float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
-  outputIlluminationValue = (outputIlluminationValue / 1000) - 0.05;
-  int sensorPhaseValue = analogRead(A1);
-  float outputPhaseValue = map(sensorPhaseValue, 0, 1023, 0, 1000);
-  outputPhaseValue = (outputPhaseValue / 1000) - 0.05;
-
   if (secondCounter >= UPDATE_SPEED)
   {
     // reset secondCounter
     secondCounter = 0;
-
     Serial.println("*********************");
     printTime(tm);
-
-    // LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.Day, tm.Month, tmYearToCalendar(tm.Year), tm.Hour, tm.Minute, tm.Second);
-
-    // Debug mode with potentiometers
-    LunarPhaseMeasures lunar;
-    lunar.apparentLongitude = 0;
-    lunar.illuminatedFraction = outputIlluminationValue;
-    lunar.phaseDecimal = outputPhaseValue;
-    printLunarMeasures(lunar);
-
-    tft.fillScreen(ST7735_BLACK);
-    DrawMoon::drawMoonOutline(tft, drawConstants);
-    // DrawMoon::drawLightBody(tft, drawConstants, lunar.phaseDecimal);
-    // DrawMoon::drawIlluminatedMoonOutline(tft, drawConstants, lunar.illuminatedFraction);
-    if (lunar.phaseDecimal <= 0.5)
-    {
-      DrawMoon::drawWaxingMoon(tft, drawConstants, lunar.phaseDecimal);
-    }
-    else
-    {
-      DrawMoon::drawWaningMoon(tft, drawConstants, lunar.phaseDecimal);
-    };
-
-    delay(1);
+    drawMoonToMeasurements();
   }
   // only increment secondCounter when click increments 1 second
   else if (tm.Second != lastSecond)
@@ -102,48 +67,67 @@ void loop()
 
 void initialize()
 {
-  Serial.println("Initializing...");
-  tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
+  // Serial.println("Initializing...");
+  // tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
 
-  tft.fillScreen(ST7735_BLACK);
   tft.setRotation(0);
+
   // SET GLOBAL VARIABLES after init because otherwise dimensions are bad
   drawConstants.moonPadding = 2; // px
   drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
   drawConstants.moonCenterY = (tft.height() - drawConstants.moonPadding) / 2;
   drawConstants.moonRadius = drawConstants.moonCenterX / 2;
-  drawConstants.moonLeft = drawConstants.moonCenterX - drawConstants.moonRadius;
-  drawConstants.moonRight = drawConstants.moonCenterX + drawConstants.moonRadius;
-  drawConstants.moonTop = drawConstants.moonCenterY - drawConstants.moonRadius;
-  drawConstants.moonBottom = drawConstants.moonCenterY + drawConstants.moonRadius;
 
   // Debug variables
-  Serial.println("Debug variables: ");
-  Serial.print("Moon X center: ");
-  Serial.println(drawConstants.moonCenterX);
-  Serial.print("Moon Y center: ");
-  Serial.println(drawConstants.moonCenterY);
-  Serial.print("Moon radius: ");
-  Serial.println(drawConstants.moonRadius);
+  // Serial.println("Debug variables: ");
+  // Serial.print("Moon X center: ");
+  // Serial.println(drawConstants.moonCenterX);
+  // Serial.print("Moon Y center: ");
+  // Serial.println(drawConstants.moonCenterY);
+  // Serial.print("Moon radius: ");
+  // Serial.println(drawConstants.moonRadius);
+
+  // Get time
+  RTC.read(tm);
 
   // Init first draw
-  DrawMoon::drawMoonOutline(tft, drawConstants);
+  drawMoonToMeasurements();
 };
 
-unsigned long testFillScreen()
+void drawMoonToMeasurements()
 {
-  unsigned long start = micros();
+  LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.Day, tm.Month, tmYearToCalendar(tm.Year), tm.Hour, tm.Minute, tm.Second);
+
+  // Debug with potentiometers
+  // int sensorIlluminationValue = analogRead(A0);
+  // float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
+  // outputIlluminationValue = (outputIlluminationValue / 1000) - 0.05;
+  // int sensorPhaseValue = analogRead(A1);
+  // float outputPhaseValue = map(sensorPhaseValue, 0, 1023, 0, 1000);
+  // outputPhaseValue = (outputPhaseValue / 1000) - 0.05;
+
+  // Debug mode with potentiometers
+  // LunarPhaseMeasures lunar;
+  // lunar.apparentLongitude = 0;
+  // lunar.illuminatedFraction = outputIlluminationValue;
+  // lunar.phaseDecimal = outputPhaseValue;
+  printLunarMeasures(lunar);
+
   tft.fillScreen(ST7735_BLACK);
-  yield();
-  tft.fillScreen(ST7735_RED);
-  yield();
-  tft.fillScreen(ST7735_GREEN);
-  yield();
-  tft.fillScreen(ST7735_BLUE);
-  yield();
-  tft.fillScreen(ST7735_BLACK);
-  yield();
-  return micros() - start;
+  DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
+
+  if (lunar.phaseDecimal <= 0.5)
+  {
+    int startAngle = 0;
+    float radiusMultiplier = lunar.phaseDecimal * 4;
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
+  }
+  else
+  {
+    int startAngle = 180;
+    float radiusMultiplier = 4 - (lunar.phaseDecimal * 4);
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
+  };
 }
 
 void printSign(LunarPhaseMeasures lunar)
@@ -158,7 +142,7 @@ void printLunarMeasures(LunarPhaseMeasures lunar)
 {
   // Serial.print("Longitude: ");
   // Serial.println(lunar.apparentLongitude, 4);
-  // printSign(lunar);
+  printSign(lunar);
   Serial.print("Illumination: ");
   Serial.println(lunar.illuminatedFraction, 4);
   Serial.print("Phase Decimal: ");

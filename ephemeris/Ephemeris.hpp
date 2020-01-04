@@ -52,7 +52,6 @@
 #define DEGREES_TO_RADIANS(value) ((value)*0.0174532925)
 #define DEGREES_TO_HOURS(value) ((value)*0.0666666667)
 #define DEGREES_MINUTES_SECONDES_TO_SECONDS(deg, min, sec) ((FLOAT)(deg)*3600 + (FLOAT)(min)*60 + (FLOAT)sec)
-#define DEGREES_MINUTES_SECONDS_TO_DECIMAL_DEGREES(deg, min, sec) (deg) >= 0 ? ((FLOAT)(deg) + (FLOAT)(min)*0.0166666667 + (FLOAT)(sec)*0.0002777778) : ((FLOAT)(deg) - (FLOAT)(min)*0.0166666667 - (FLOAT)(sec)*0.0002777778)
 
 // Convert radians
 #define RADIANS_TO_DEGREES(value) ((value)*57.2957795131)
@@ -122,20 +121,6 @@ public:
                                                   unsigned int hours, unsigned int minutes, unsigned int seconds);
 
 private:
-  /*! Compute apparent sideral time (in floating hours) for a given date and time.
-     *  Reference: Chapter 7, page 35: Temps sidéral à Greenwich. */
-  static FLOAT apparentSideralTime(unsigned int day, unsigned int month, unsigned int year,
-                                   unsigned int hours, unsigned int minutes, unsigned int seconds);
-
-  /*! Compute mean sideral time for Greenwich.
-     *  Reference: Chapter 7, page 35: Temps sidéral à Greenwich. */
-  static FLOAT meanGreenwichSiderealTimeAtDateAndTime(unsigned int day, unsigned int month, unsigned int year,
-                                                      unsigned int hours, unsigned int minutes, unsigned int seconds);
-
-  /*! Compute mean sideral time for Greenwich.
-     *  Reference: Chapter 7, page 35: Temps sidéral à Greenwich. */
-  static FLOAT meanGreenwichSiderealTimeAtJD(JulianDay jd);
-
   /* ! Compute sun's heliocentric coordnates.
     * Reference: Astrological Algorithims (2015) ch 25
   */

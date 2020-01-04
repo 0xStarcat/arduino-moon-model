@@ -26,18 +26,16 @@
 #define FLOAT float
 #endif
 
-
 /*! This structure describes a Julian day with integer and floating value parts.
  *  As a result we can get 64bits precision with single precision processor. */
 struct JulianDay
 {
-    /*! Integer value of Jullian day. */
-    long day;
-    
-    /*! Floating value of Jullian day (0.0=0h 1.0=24h) */
-    FLOAT time;
-};
+  /*! Integer value of Jullian day. */
+  long day;
 
+  /*! Floating value of Jullian day (0.0=0h 1.0=24h) */
+  FLOAT time;
+};
 
 /*!
  * This class manipulates calendar arithmetic.
@@ -45,21 +43,10 @@ struct JulianDay
 class Calendar
 {
 public:
-    
-    static JulianDay julianDayForDate(FLOAT day, int month, int year);
-    
-    static JulianDay julianDayForDateAndTime(int day,   int month,   int year,
-                                             int hours, int minutes, int seconds);
-    
-    static void dateForJulianDay(JulianDay julianDay, FLOAT *day, int *month, int *year);
-    
-    static void dateAndTimeForJulianDay(JulianDay julianDay,
-                                        int *day,   int *month,   int *year,
-                                        int *hours, int *minutes, int *seconds);
-    
-    static unsigned int weekDayForDate( int day, int month, int year);
-    
-    static unsigned int weekDayForJulianDay(JulianDay julianDay);
+  static JulianDay julianDayForDate(FLOAT day, int month, int year);
+
+  static JulianDay julianDayForDateAndTime(int day, int month, int year,
+                                           int hours, int minutes, int seconds);
 };
 
 #endif

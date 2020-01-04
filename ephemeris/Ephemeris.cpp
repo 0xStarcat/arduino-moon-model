@@ -32,27 +32,6 @@
 static FLOAT latitudeOnEarth = NAN;
 static FLOAT longitudeOnEarth = NAN;
 
-FLOAT Ephemeris::apparentSideralTime(unsigned int day, unsigned int month, unsigned int year,
-                                     unsigned int hours, unsigned int minutes, unsigned int seconds)
-{
-  JulianDay jd = Calendar::julianDayForDate(day, month, year);
-
-  FLOAT T = T_WITH_JD(jd.day, jd.time);
-  FLOAT TSquared = T * T;
-  FLOAT TCubed = TSquared * T;
-
-  FLOAT theta0 = 100.46061837 + T * 36000.770053608 + TSquared * 0.000387933 - TCubed / 38710000;
-  theta0 = LIMIT_DEGREES_TO_360(theta0);
-  theta0 = DEGREES_TO_HOURS(theta0);
-
-  FLOAT time = HOURS_MINUTES_SECONDS_TO_DECIMAL_HOURS(hours, minutes, seconds);
-
-  FLOAT apparentSideralTime = theta0 + 1.00273790935 * time;
-  apparentSideralTime = LIMIT_HOURS_TO_24(apparentSideralTime);
-
-  return apparentSideralTime;
-}
-
 FLOAT Ephemeris::obliquityAndNutationForT(FLOAT T, FLOAT *deltaObliquity, FLOAT *deltaNutation)
 {
   FLOAT TSquared = T * T;
@@ -99,66 +78,8 @@ FLOAT Ephemeris::obliquityAndNutationForT(FLOAT T, FLOAT *deltaObliquity, FLOAT 
   return obliquity;
 }
 
-FLOAT Ephemeris::meanGreenwichSiderealTimeAtDateAndTime(unsigned int day, unsigned int month, unsigned int year,
-                                                        unsigned int hours, unsigned int minutes, unsigned int seconds)
-{
-  FLOAT meanGreenwichSiderealTime;
-
-  JulianDay jd0 = Calendar::julianDayForDateAndTime(day, month, year, 0, 0, 0);
-  FLOAT T0 = T_WITH_JD(jd0.day, jd0.time);
-  FLOAT T0Squared = T0 * T0;
-  FLOAT T0Cubed = T0Squared * T0;
-
-  // Sideral time at midnight
-  FLOAT theta0 = 100.46061837 + (36000.770053608 * T0) + (0.000387933 * T0Squared) - (T0Cubed / 38710000);
-  theta0 = LIMIT_DEGREES_TO_360(theta0);
-  theta0 = DEGREES_TO_HOURS(theta0);
-
-  // Sideral time of day
-  FLOAT thetaH = 1.00273790935 * HOURS_MINUTES_SECONDS_TO_SECONDS(hours, minutes, seconds);
-  thetaH = SECONDS_TO_DECIMAL_HOURS(thetaH);
-
-  // Add time at midnight and time of day
-  meanGreenwichSiderealTime = theta0 + thetaH;
-
-  return LIMIT_HOURS_TO_24(meanGreenwichSiderealTime);
-}
-
-FLOAT Ephemeris::meanGreenwichSiderealTimeAtJD(JulianDay jd)
-{
-  FLOAT meanGreenwichSiderealTime;
-
-  FLOAT T0 = T_WITH_JD(jd.day, jd.time);
-  FLOAT T0Squared = T0 * T0;
-  FLOAT T0Cubed = T0Squared * T0;
-
-  // Sideral time at midnight
-  FLOAT theta0 = 100.46061837 + (36000.770053608 * T0) + (0.000387933 * T0Squared) - (T0Cubed / 38710000);
-  theta0 = LIMIT_DEGREES_TO_360(theta0);
-  theta0 = DEGREES_TO_HOURS(theta0);
-
-  int day, month, year, hours, minutes, seconds;
-  Calendar::dateAndTimeForJulianDay(jd, &day, &month, &year, &hours, &minutes, &seconds);
-
-  // Sideral time of day
-  FLOAT thetaH = 1.00273790935 * HOURS_MINUTES_SECONDS_TO_SECONDS(hours, minutes, seconds);
-  thetaH = SECONDS_TO_DECIMAL_HOURS(thetaH);
-
-  // Add time at midnight and time of day
-  meanGreenwichSiderealTime = theta0 + thetaH;
-
-  return LIMIT_HOURS_TO_24(meanGreenwichSiderealTime);
-}
-
 void Ephemeris::setLocationOnEarth(FLOAT floatingLatitude, FLOAT floatingLongitude)
 {
   latitudeOnEarth = floatingLatitude;
   longitudeOnEarth = floatingLongitude;
-}
-
-void Ephemeris::setLocationOnEarth(FLOAT latDegrees, FLOAT latMinutes, FLOAT latSeconds,
-                                   FLOAT lonDegrees, FLOAT lonMinutes, FLOAT lonSeconds)
-{
-  latitudeOnEarth = DEGREES_MINUTES_SECONDS_TO_DECIMAL_DEGREES(latDegrees, latMinutes, latSeconds);
-  longitudeOnEarth = DEGREES_MINUTES_SECONDS_TO_DECIMAL_DEGREES(lonDegrees, lonMinutes, lonSeconds);
 }
