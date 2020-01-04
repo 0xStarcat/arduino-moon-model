@@ -8,17 +8,22 @@
 #include "drawMoon.hpp"
 #include <DS1307RTC.h>
 
-#include "SPI.h"
-#include "TFT_22_ILI9225.h"
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#include <SPI.h>
 
-#define TFT_CS 10
-#define TFT_DC 9    // RS
-#define TFT_POCI 11 // SDI / SDA / A4 // 11
 #define TFT_CLK 13  // SCK A5 // 13
-#define TFT_RST A3
-#define TFT_LED 0 // 0 if wired to +5V directly
+#define TFT_POCI 11 // SDI / SDA / A4 // 11
+#define TFT_CS 10
+#define TFT_RST 9
+#define TFT_DC 8   // RS
+#define TFT_PICO 0 // SDI / SDA / A4 // 11
+#define TFT_LED 0  // 0 if wired to +5V directly
 #define TFT_BRIGHTNESS 200
-TFT_22_ILI9225 tft = TFT_22_ILI9225(TFT_RST, TFT_DC, TFT_CS, TFT_LED, TFT_BRIGHTNESS);
+
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+// Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_POCI, TFT_CLK, TFT_RST, TFT_PICO);
+//Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
 
 const uint8_t UPDATE_SPEED = 5; // seconds
 uint8_t secondCounter = 0;      // counts seconds until update calc/paint
@@ -32,30 +37,15 @@ void setup()
   Serial.begin(9600);
   RTC.write(tm);
 
-  // INITIALIZE SCREEN
-  tft.begin();
-  tft.clear();
-  tft.setBacklight(false);
-  tft.setDisplay(false);
-  tft.setOrientation(0);
-
   Serial.println("Beginning!");
   Serial.println("********************");
   Serial.println("Dimensions: ");
   Serial.print("X: ");
-  Serial.println(tft.maxX());
+  Serial.println(tft.width());
   Serial.print("Y: ");
-  Serial.println(tft.maxY());
+  Serial.println(tft.height());
 
   initialize();
-
-  Serial.println("Debug variables: ");
-  Serial.print("Moon X center: ");
-  Serial.println(drawConstants.moonCenterX);
-  Serial.print("Moon Y center: ");
-  Serial.println(drawConstants.moonCenterY);
-  Serial.print("Moon radius: ");
-  Serial.println(drawConstants.moonRadius);
 }
 
 void loop()
@@ -88,7 +78,7 @@ void loop()
     lunar.phaseDecimal = outputPhaseValue;
     printLunarMeasures(lunar);
 
-    tft.clear();
+    tft.fillScreen(ST7735_BLACK);
     DrawMoon::drawMoonOutline(tft, drawConstants);
     DrawMoon::drawLightBody(tft, drawConstants, lunar.phaseDecimal);
     DrawMoon::drawIlluminatedMoonOutline(tft, drawConstants, lunar.illuminatedFraction);
@@ -103,21 +93,48 @@ void loop()
 void initialize()
 {
   Serial.println("Initializing...");
+  tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
+
+  tft.fillScreen(ST7735_BLACK);
+  tft.setRotation(1);
   // SET GLOBAL VARIABLES after init because otherwise dimensions are bad
   drawConstants.moonPadding = 2; // px
-  drawConstants.moonCenterX = (tft.maxX() - drawConstants.moonPadding) / 2;
-  drawConstants.moonCenterY = (tft.maxY() - drawConstants.moonPadding) / 2;
+  drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
+  drawConstants.moonCenterY = (tft.height() - drawConstants.moonPadding) / 2;
   drawConstants.moonRadius = drawConstants.moonCenterX / 2;
   drawConstants.moonLeft = drawConstants.moonCenterX - drawConstants.moonRadius;
   drawConstants.moonRight = drawConstants.moonCenterX + drawConstants.moonRadius;
   drawConstants.moonTop = drawConstants.moonCenterY - drawConstants.moonRadius;
   drawConstants.moonBottom = drawConstants.moonCenterY + drawConstants.moonRadius;
 
+  // Debug variables
+  Serial.println("Debug variables: ");
+  Serial.print("Moon X center: ");
+  Serial.println(drawConstants.moonCenterX);
+  Serial.print("Moon Y center: ");
+  Serial.println(drawConstants.moonCenterY);
+  Serial.print("Moon radius: ");
+  Serial.println(drawConstants.moonRadius);
+
   // Init first draw
-  tft.setBacklight(true);
-  tft.setDisplay(true);
   DrawMoon::drawMoonOutline(tft, drawConstants);
 };
+
+unsigned long testFillScreen()
+{
+  unsigned long start = micros();
+  tft.fillScreen(ST7735_BLACK);
+  yield();
+  tft.fillScreen(ST7735_RED);
+  yield();
+  tft.fillScreen(ST7735_GREEN);
+  yield();
+  tft.fillScreen(ST7735_BLUE);
+  yield();
+  tft.fillScreen(ST7735_BLACK);
+  yield();
+  return micros() - start;
+}
 
 void printSign(LunarPhaseMeasures lunar)
 {
