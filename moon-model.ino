@@ -25,7 +25,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 // Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_POCI, TFT_CLK, TFT_RST, TFT_PICO);
 //Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
 
-const uint8_t UPDATE_SPEED = 5; // seconds
+const uint8_t UPDATE_SPEED = 1; // seconds
 uint8_t secondCounter = 0;      // counts seconds until update calc/paint
 
 DrawConstants drawConstants;
@@ -80,8 +80,18 @@ void loop()
 
     tft.fillScreen(ST7735_BLACK);
     DrawMoon::drawMoonOutline(tft, drawConstants);
-    DrawMoon::drawLightBody(tft, drawConstants, lunar.phaseDecimal);
-    DrawMoon::drawIlluminatedMoonOutline(tft, drawConstants, lunar.illuminatedFraction);
+    // DrawMoon::drawLightBody(tft, drawConstants, lunar.phaseDecimal);
+    // DrawMoon::drawIlluminatedMoonOutline(tft, drawConstants, lunar.illuminatedFraction);
+    if (lunar.phaseDecimal <= 0.5)
+    {
+      DrawMoon::drawWaxingMoon(tft, drawConstants, lunar.phaseDecimal);
+    }
+    else
+    {
+      DrawMoon::drawWaningMoon(tft, drawConstants, lunar.phaseDecimal);
+    };
+
+    delay(1);
   }
   // only increment secondCounter when click increments 1 second
   else if (tm.Second != lastSecond)
@@ -96,7 +106,7 @@ void initialize()
   tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
 
   tft.fillScreen(ST7735_BLACK);
-  tft.setRotation(1);
+  tft.setRotation(0);
   // SET GLOBAL VARIABLES after init because otherwise dimensions are bad
   drawConstants.moonPadding = 2; // px
   drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;

@@ -22,4 +22,10 @@ public:
   static void drawProjectionShape(Adafruit_ST7735 tft, DrawConstants drawConstants, float phaseDecimal, uint16_t color);
 
   static void drawIlluminatedMoonOutline(Adafruit_ST7735 tft, DrawConstants drawConstants, float illuminatedFraction);
+
+  static void drawWaxingMoon(Adafruit_ST7735 tft, DrawConstants drawConstants, float phaseDecimal);
+
+  static void drawWaningMoon(Adafruit_ST7735 tft, DrawConstants drawConstants, float phaseDecimal);
+
+  static void fillArc2(Adafruit_ST7735 tft, int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour);
 };
