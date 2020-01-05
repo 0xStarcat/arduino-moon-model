@@ -1,10 +1,11 @@
-// Sketch uses 19322 bytes.
-// Global variables use 833 bytes of dynamic memory.
+// Sketch uses 31436 bytes.
+// Global variables use 651 bytes of dynamic memory.
 
 #include "ephemeris/Calendar.cpp"
 #include "ephemeris/Ephemeris.cpp"
 #include "utilities.hpp"
 #include "drawMoon.hpp"
+#include "time.hpp"
 #include <RTClib.h>
 
 // #include <Adafruit_GFX.h>    // Core graphics library
@@ -17,6 +18,17 @@
 #define TFT_RST 9
 #define TFT_DC 8 // RS
 // #define TFT_PICO 0 // SDI / SDA / A4 // 11
+
+// To reduce compile size & flash memory, only set 1 mode at a time.
+#define SET_UTC_TIME 0
+#define DEBUG 0
+
+// Define hours to convert local time to UTC time.
+// Remember to account for daylight savings if in effect.
+// EST = -5 so TIMEZONE_OFFSET = 5;
+// PST = -8 so TIMEZONE_OFFET = 8;
+// GMT = +1 so TIMEZONE_OFFSET = -1;
+#define TIMEZONE_OFFSET 5
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -37,15 +49,16 @@ void setup()
       ;
   }
 
-  // if (rtc.lostPower())
-  // {
-  //   Serial.println("RTC lost power, lets set the time!");
-  //   // following line sets the RTC to the date & time this sketch was compiled
-  //   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  //   // This line sets the RTC with an explicit date & time, for example to set
-  //   // January 21, 2014 at 3am you would call:
-  //   // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
-  // }
+#if SET_UTC_TIME
+  if (rtc.lostPower())
+  {
+    Serial.println("RTC lost power, lets set the time!");
+    // following line sets the RTC to the date & time this sketch was compiled
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    DateTime utcTime = TimeWrapper::toUtcTime(TIMEZONE_OFFSET, rtc.now());
+    rtc.adjust(utcTime);
+  }
+#endif
 
   initialize();
 };
@@ -53,37 +66,36 @@ void setup()
 void loop()
 {
   DateTime tm = rtc.now();
+  int currentSecond = tm.second();
 
   if (secondCounter >= UPDATE_SPEED)
   {
     // reset secondCounter
     secondCounter = 1;
-    Serial.print("*** ");
-    printTime(tm);
-    LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
 
-    drawMoonToMeasurements(tm, lunar);
-    drawHoroscopeSign(lunar, drawConstants);
+    drawRealTimeData();
   }
   // only increment secondCounter when click increments 1 second
-  else if (tm.second() != lastSecond)
+  else if (currentSecond != lastSecond)
   {
     secondCounter += 1;
-    lastSecond = tm.second();
+    lastSecond = currentSecond;
   }
 };
 
 void initialize()
 {
+#if DEBUG
   Serial.println("Initializing...");
+#endif
   tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
 
   // tft.setRotation(0);
 
   // SET GLOBAL VARIABLES after init because otherwise dimensions are bad
-  // drawConstants.moonPadding = 2; // px
-  drawConstants.moonCenterX = (tft.width() - 2) / 2;
-  drawConstants.moonCenterY = (tft.height() - 2) / 2;
+  drawConstants.moonPadding = 2; // px
+  drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
+  drawConstants.moonCenterY = (tft.height() - drawConstants.moonPadding) / 2;
   drawConstants.moonRadius = drawConstants.moonCenterX / 2;
 
   // Debug variables
@@ -95,15 +107,27 @@ void initialize()
   // Serial.print("Moon radius: ");
   // Serial.println(drawConstants.moonRadius);
 
-  // Init first draw
+  drawRealTimeData();
+};
+
+void drawRealTimeData()
+{
+
   DateTime tm = rtc.now();
+#if DEBUG
   printTime(tm);
+#endif
 
   LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
 
-  drawMoonToMeasurements(tm, lunar);
+#if DEBUG
+  printLunarMeasures(lunar);
+#endif
+
+  tft.fillScreen(ST7735_BLACK);
   drawHoroscopeSign(lunar, drawConstants);
-};
+  drawMoonToMeasurements(tm, lunar);
+}
 
 void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
 {
@@ -121,24 +145,24 @@ void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
   // lunar.apparentLongitude = 0;
   // lunar.illuminatedFraction = outputIlluminationValue;
   // lunar.phaseDecimal = outputPhaseValue;
-  printLunarMeasures(lunar);
 
-  tft.fillScreen(ST7735_BLACK);
   DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
-  float phaseMult = lunar.phaseDecimal * 4;
-
+  // float phaseMult = lunar.phaseDecimal * 4; // fill based on phaseDecimal
+  float phaseMult = lunar.illuminatedFraction * 2; // fill based on illuminatedFraction
   if (lunar.phaseDecimal <= 0.5)
   {
 
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 0, phaseMult, ST7735_WHITE);
+    float radiusMultiplier = phaseMult;
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 0, radiusMultiplier, ST7735_WHITE);
   }
   else
   {
-
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 180, 4 - (phaseMult), ST7735_WHITE);
+    // float radiusMultiplier = 4 - phaseMult; // fill based on phaseDecimal
+    float radiusMultiplier = phaseMult;
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 180, radiusMultiplier, ST7735_WHITE);
   };
 
-  DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
+  // DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
 };
 
 void drawHoroscopeSign(LunarPhaseMeasures lunar, DrawConstants drawConstants)
@@ -156,8 +180,6 @@ void printSign(LunarPhaseMeasures lunar)
 
 void printLunarMeasures(LunarPhaseMeasures lunar)
 {
-  // Serial.print("Longitude: ");
-  // Serial.println(lunar.apparentLongitude, 4);
   // printSign(lunar);
   Serial.print("IF: ");
   Serial.println(lunar.illuminatedFraction, 4);
@@ -169,6 +191,7 @@ void printLunarMeasures(LunarPhaseMeasures lunar)
 
 void printTime(DateTime tm)
 {
+  Serial.print("*** ");
   Serial.print(tm.month());
   Serial.print("/");
   Serial.print(tm.day());

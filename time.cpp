@@ -54,3 +54,43 @@ tmElements_t TimeWrapper::getSystemTime()
 
   return tm;
 }
+
+const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+DateTime TimeWrapper::toUtcTime(uint8_t tzOffset, DateTime tm)
+{
+  Serial.println("Setting UTC time...");
+
+  uint8_t ss = tm.second();
+  uint8_t mm = tm.minute();
+  uint8_t hh = tm.hour();
+  uint8_t d = tm.day();
+  uint8_t m = tm.month();
+  uint16_t y = tm.year();
+
+  hh += tzOffset;
+
+  // if hour is 24+
+  if (hh > 23)
+  {
+    hh -= 24;
+    d += 1;
+
+    // If days are > days in month
+    if (d > daysInMonth[m + 1])
+    {
+      d = 1;
+      m += 1;
+
+      // if month > 12
+      if (m > 12)
+      {
+        m = 1;
+        y += 1;
+      }
+    }
+  }
+
+  DateTime time = DateTime(y, m, d, hh, mm, ss);
+  return time;
+}

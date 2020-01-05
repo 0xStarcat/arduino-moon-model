@@ -6,74 +6,6 @@ void DrawMoon::drawMoonOutline(Adafruit_ST7735 tft, DrawConstants drawConstants,
   tft.drawCircle(drawConstants.moonCenterX, drawConstants.moonCenterY, drawConstants.moonRadius, color);
 };
 
-// void DrawMoon::drawLightBody(Adafruit_ST7735 tft, DrawConstants drawConstants, float phaseDecimal)
-// {
-//   float fullMoonOrb = 0.05;
-
-//   // full moon, Waxing crescent, waning crescent, fill moon
-//   if ((phaseDecimal < 0.25) || (phaseDecimal > 0.75 && phaseDecimal < 1) || (phaseDecimal > 0.5 - fullMoonOrb && phaseDecimal < 0.5 + fullMoonOrb))
-//   {
-
-//     tft.fillCircle(drawConstants.moonCenterX, drawConstants.moonCenterY, drawConstants.moonRadius, ST7735_WHITE);
-//     drawProjectionShape(tft, drawConstants, phaseDecimal, ST7735_BLACK);
-//   }
-//   else
-//   {
-//     drawProjectionShape(tft, drawConstants, phaseDecimal, ST7735_WHITE);
-//   };
-// };
-
-// void DrawMoon::drawProjectionShape(Adafruit_ST7735 tft, DrawConstants drawConstants, float phaseDecimal, uint16_t color)
-// {
-//   // no smaller than 1Radius
-//   // 1 Radius + 1 Radius * 8phaseDecimal
-//   int projectionRadius = max(drawConstants.moonRadius, drawConstants.moonRadius + (drawConstants.moonRadius * (phaseDecimal * 8)));
-//   int projectionCenterX = (drawConstants.moonCenterX - (projectionRadius) + drawConstants.moonRadius - (drawConstants.moonRadius * (phaseDecimal * 3.3)));
-//   // int projectionCenterX = (drawConstants.moonCenterX + (projectionRadius) + drawConstants.moonRadius + (drawConstants.moonRadius * (phaseDecimal * 3.3)));
-
-//   int projectionCenterY = drawConstants.moonCenterY;
-//   Serial.println("*** proj radius: ");
-//   Serial.println(projectionRadius);
-//   Serial.println(drawConstants.moonLeft);
-//   Serial.println(drawConstants.moonRadius);
-//   Serial.println(projectionCenterX);
-
-//   // tft.fillCircle(px, py, (projectionRadius / 2), ST7735_GREEN);
-
-//   // Increment faster to speed up draw time when projectionRadius is very large
-//   // ...until paintbrush touches moon (than increment normally)
-//   for (int rx = projectionCenterX >= 0 ? 0 : drawConstants.moonLeft; rx < projectionRadius; (projectionRadius > (drawConstants.moonRadius * 2) && rx < (projectionRadius - (drawConstants.moonRadius * 2))) ? rx += (projectionRadius / 4) : rx += 1)
-//   {
-//     int angleStart = projectionCenterX >= drawConstants.moonLeft ? 0 : -90;
-//     int angleEnd = projectionCenterX >= drawConstants.moonLeft ? 360 : 90;
-//     for (int i = angleStart; i < angleEnd; i += 1)
-//     {
-//       float radians = i * PI / 180;
-
-//       float px = (drawConstants.moonCenterX - (projectionRadius) + drawConstants.moonRadius - (drawConstants.moonRadius * (phaseDecimal * 3.4))) + rx * cos(radians);
-//       float py = drawConstants.moonCenterY + rx * sin(radians);
-
-//       tft.drawPixel(px, py, color);
-//     };
-//   }
-// };
-
-// void DrawMoon::drawIlluminatedMoonOutline(Adafruit_ST7735 tft, DrawConstants drawConstants, float illuminatedFraction)
-// {
-//   // Thin outer circular layer
-//   // for (int rx = (moonRadius - (15 * illuminatedFraction)); rx < moonRadius; rx++)
-//   // {
-//   for (int i = (-90 * (illuminatedFraction * 4)); i < (90 * (illuminatedFraction * 4)); i++)
-//   {
-//     double radians = i * PI / 180;
-//     double px = drawConstants.moonCenterX + drawConstants.moonRadius * cos(radians);
-//     double py = drawConstants.moonCenterY + drawConstants.moonRadius * sin(radians);
-
-//     tft.drawPixel(px, py, ST7735_WHITE);
-//   };
-//   // };
-// };
-
 // radiusMultiplier = float from 0 - 2 to represent how far to draw the crescent / gibbous out. 2 radius = full moon
 // startAngle = int from 0 - 359. the side to start drawing from. 0 = right side, 180 = left side.
 void DrawMoon::drawMoonLight(Adafruit_ST7735 tft, DrawConstants drawConstants, float illuminatedFraction, int startAngle, float radiusMultiplier, uint16_t baseColor)
@@ -150,18 +82,35 @@ void DrawMoon::fillArc2(Adafruit_ST7735 tft, int x, int y, int start_angle, int 
 // Draw glyphs in < 10 shapes
 // Do not use drawPixel
 
+void drawM(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+{
+  tft.drawLine(x + 4, y + 3, x + 4, y + 10, color);
+  tft.drawLine(x + 4, y + 2, x + 5, y + 2, color);
+  tft.drawLine(x + 7, y + 3, x + 7, y + 10, color);
+  tft.drawLine(x + 8, y + 2, x + 9, y + 2, color);
+  tft.drawLine(x + 10, y + 3, x + 10, y + 12, color);
+};
+
 void drawAries(Adafruit_ST7735 tft, int x, int y)
 {
   uint16_t color = ST7735_RED;
 
-  tft.drawLine(x + 2, y + 3, x + 2, y + 5, color);
-  tft.drawLine(x + 3, y + 2, x + 5, y + 2, color);
-  tft.drawLine(x + 6, y + 3, x + 6, y + 4, color);
-  tft.drawLine(x + 6, y + 3, x + 6, y + 4, color);
-  tft.drawRect(x + 7, y + 4, 2, 9, color);
-  tft.drawLine(x + 9, y + 3, x + 9, y + 4, color);
-  tft.drawLine(x + 10, y + 2, x + 12, y + 2, color);
-  tft.drawLine(x + 13, y + 3, x + 13, y + 5, color);
+  // tft.drawLine(x + 2, y + 3, x + 2, y + 5, color);
+  // tft.drawLine(x + 3, y + 2, x + 5, y + 2, color);
+  // tft.drawLine(x + 6, y + 3, x + 6, y + 4, color);
+
+  // tft.drawLine(x + 9, y + 3, x + 9, y + 4, color);
+  // tft.drawLine(x + 10, y + 2, x + 12, y + 2, color);
+  // tft.drawLine(x + 13, y + 3, x + 13, y + 5, color);
+  // tft.drawRect(x + 7, y + 6, 2, 7, color);
+
+  tft.drawLine(x + 4, y + 2, x + 2, y + 5, color);
+  tft.drawLine(x + 6, y + 5, x + 4, y + 2, color);
+
+  tft.drawLine(x + 7, y + 6, x + 7, y + 12, color);
+
+  tft.drawLine(x + 8, y + 5, x + 10, y + 2, color);
+  tft.drawLine(x + 10, y + 2, x + 12, y + 4, color);
 };
 
 void drawTaurus(Adafruit_ST7735 tft, int x, int y)
@@ -169,12 +118,16 @@ void drawTaurus(Adafruit_ST7735 tft, int x, int y)
   uint16_t color = ST7735_GREEN;
 
   tft.drawCircle(x + 7, y + 8, 3, color);
-  tft.drawLine(x + 3, y + 3, x + 4, y + 3, color);
-  tft.drawLine(x + 4, y + 4, x + 5, y + 4, color);
-  tft.drawLine(x + 5, y + 5, x + 6, y + 5, color);
-  tft.drawLine(x + 11, y + 3, x + 12, y + 3, color);
-  tft.drawLine(x + 10, y + 4, x + 11, y + 4, color);
-  tft.drawLine(x + 9, y + 5, x + 10, y + 5, color);
+  tft.drawLine(x + 3, y + 3, x + 5, y + 5, color);
+
+  // tft.drawLine(x + 3, y + 3, x + 4, y + 3, color);
+  // tft.drawLine(x + 4, y + 4, x + 5, y + 4, color);
+  // tft.drawLine(x + 5, y + 5, x + 6, y + 5, color);
+
+  tft.drawLine(x + 9, y + 5, x + 11, y + 3, color);
+  // tft.drawLine(x + 11, y + 3, x + 12, y + 3, color);
+  // tft.drawLine(x + 10, y + 4, x + 11, y + 4, color);
+  // tft.drawLine(x + 9, y + 5, x + 10, y + 5, color);
 };
 
 void drawGemini(Adafruit_ST7735 tft, int x, int y)
@@ -202,8 +155,10 @@ void drawLeo(Adafruit_ST7735 tft, int x, int y)
   uint16_t color = ST7735_RED;
 
   tft.drawCircle(x + 5, y + 7, 3, color);
-  tft.drawLine(x + 5, y + 4, x + 5, y + 2, color);
-  tft.drawLine(x + 6, y + 2, x + 9, y + 2, color);
+  // tft.drawLine(x + 5, y + 4, x + 5, y + 2, color);
+  // tft.drawLine(x + 6, y + 2, x + 9, y + 2, color);
+  tft.drawLine(x + 5, y + 4, x + 10, y + 3, color);
+
   tft.drawLine(x + 10, y + 3, x + 10, y + 12, color);
   tft.drawLine(x + 10, y + 12, x + 12, y + 12, color);
 };
@@ -212,11 +167,7 @@ void drawVirgo(Adafruit_ST7735 tft, int x, int y)
 {
   uint16_t color = ST7735_GREEN;
 
-  tft.drawLine(x + 4, y + 3, x + 4, y + 10, color);
-  tft.drawLine(x + 4, y + 2, x + 5, y + 2, color);
-  tft.drawLine(x + 7, y + 3, x + 7, y + 10, color);
-  tft.drawLine(x + 8, y + 2, x + 9, y + 2, color);
-  tft.drawLine(x + 10, y + 3, x + 10, y + 12, color);
+  drawM(tft, x, y, color);
   tft.drawLine(x + 11, y + 4, x + 13, y + 4, color);
   tft.drawLine(x + 13, y + 4, x + 13, y + 7, color);
   tft.drawLine(x + 13, y + 7, x + 6, y + 13, color);
@@ -235,11 +186,7 @@ void drawScorpio(Adafruit_ST7735 tft, int x, int y)
 {
   uint16_t color = ST7735_BLUE;
 
-  tft.drawLine(x + 4, y + 3, x + 4, y + 10, color);
-  tft.drawLine(x + 4, y + 2, x + 5, y + 2, color);
-  tft.drawLine(x + 7, y + 3, x + 7, y + 10, color);
-  tft.drawLine(x + 8, y + 2, x + 9, y + 2, color);
-  tft.drawLine(x + 10, y + 3, x + 10, y + 12, color);
+  drawM(tft, x, y, color);
   tft.drawLine(x + 11, y + 12, x + 13, y + 12, color);
 };
 
@@ -248,6 +195,7 @@ void drawSagittarius(Adafruit_ST7735 tft, int x, int y)
   uint16_t color = ST7735_RED;
 
   tft.drawLine(x + 3, y + 12, x + 12, y + 3, color);
+  // tft.drawTriangle(x + 8, y + 3, x + 12, y + 3, x + 12, y + 7, color);
   tft.drawLine(x + 8, y + 3, x + 12, y + 3, color);
   tft.drawLine(x + 12, y + 3, x + 12, y + 7, color);
   tft.drawLine(x + 4, y + 7, x + 8, y + 11, color);
@@ -270,7 +218,7 @@ void drawAquarius(Adafruit_ST7735 tft, int x, int y)
 
   for (int i = 0; i < 5; i += 4)
   {
-    tft.drawLine(x + 1, y + 6 + i, x + 4, y + 4, color);
+    tft.drawLine(x + 1, y + 6 + i, x + 4, y + 4 + i, color);
     tft.drawLine(x + 4, y + 4 + i, x + 5, y + 6 + i, color);
     tft.drawLine(x + 5, y + 6 + i, x + 8, y + 4 + i, color);
     tft.drawLine(x + 8, y + 4 + i, x + 9, y + 6 + i, color);
@@ -283,7 +231,7 @@ void drawPisces(Adafruit_ST7735 tft, int x, int y)
 {
   uint16_t color = ST7735_BLUE;
 
-  tft.drawLine(x + 3, y + 2, x + 5, y + 4, color);
+  tft.drawLine(x + 5, y + 4, x + 3, y + 2, color);
   tft.drawLine(x + 5, y + 4, x + 5, y + 10, color);
   tft.drawLine(x + 5, y + 10, x + 3, y + 13, color);
 
@@ -325,23 +273,53 @@ void drawSign(Adafruit_ST7735 tft, int x, int y, int i)
   };
 };
 
+double getRadialX(DrawConstants drawConstants, double radians, float padding)
+{
+  return drawConstants.moonCenterX + (drawConstants.moonRadius + padding) * cos(radians);
+};
+
+double getRadialY(DrawConstants drawConstants, double radians, float padding)
+{
+  return drawConstants.moonCenterY + (drawConstants.moonRadius + padding) * sin(radians);
+};
+
 void DrawMoon::drawSignAtPosition(Adafruit_ST7735 tft, DrawConstants drawConstants, float apparentLongitude)
 {
 
   int iStart = 6;
   for (int i = iStart; i < iStart + 12; i++)
   {
-    double radians = ((i * PI / 180) * 30); // start at left of circle
-    int circlePadding = 16;
-    int markerOffset = circlePadding / 2;
-    double px = drawConstants.moonCenterX + (drawConstants.moonRadius + circlePadding) * cos(radians);
-    double py = drawConstants.moonCenterY + (drawConstants.moonRadius + circlePadding) * sin(radians);
+    int signPadding = 12;
+    int zodiacPadding = 20;
+    int markerOffset = signPadding / 2;
+
+    double radians = -(((i * 30) * PI / 180)); // start at left of circle
+    double px = getRadialX(drawConstants, radians, signPadding);
+    double py = getRadialY(drawConstants, radians, signPadding);
+
+    double boundaryRadians = -(((i * 30) * PI / 180)) - 15; // start at left of circle
+    double mpx = getRadialX(drawConstants, boundaryRadians, zodiacPadding);
+    double mpy = getRadialY(drawConstants, boundaryRadians, zodiacPadding);
 
     // tft.drawRect(px - markerOffset, py - markerOffset, 16, 16, ST7735_RED);
+    // drawSign(tft, px - markerOffset, py - markerOffset, i - iStart);
+
+    // Draws zodiac boundaries
+    tft.drawLine(mpx, mpy, mpx, mpy, ST7735_WHITE);
+
     int index = floor(apparentLongitude / 30);
     if (index == i - iStart)
     {
 
+      // Draws longitude position
+      int apLon = (int)apparentLongitude;
+      double positionRadians = -((((i * 30) + (30 - (apLon % 30))) * PI / 180)); // start at left of circle
+      double ppx = getRadialX(drawConstants, positionRadians, zodiacPadding);
+      double ppy = getRadialY(drawConstants, positionRadians, zodiacPadding);
+
+      tft.drawLine(ppx, ppy, ppx, ppy, ST7735_MAGENTA);
+
+      // Draws glypg
       drawSign(tft, px - markerOffset, py - markerOffset, index);
     };
   };
