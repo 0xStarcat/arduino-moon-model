@@ -21,5 +21,7 @@ public:
 
   static void drawMoonLight(Adafruit_ST7735 tft, DrawConstants drawConstants, float illuminatedFraction, int startAngle, float radiusMultiplier, uint16_t baseColor);
 
-  static void fillArc2(Adafruit_ST7735 tft, int x, int y, int start_angle, int seg_count, int rx, int ry, int w, unsigned int colour);
+  static void fillArc2(Adafruit_ST7735 tft, int x, int y, int start_angle, int seg_count, int rx, int ry, int w, uint16_t colour);
+
+  static void drawSignAtPosition(Adafruit_ST7735 tft, DrawConstants drawConstants, float apparentLongitude);
 };

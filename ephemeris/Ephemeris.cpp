@@ -21,8 +21,8 @@
 #if ARDUINO
 #include <Arduino.h>
 #endif
-#include <stdio.h>
-#include <math.h>
+// #include <stdio.h>
+// #include <math.h>
 
 #include "Ephemeris.hpp"
 #include "utilities/luna.cpp"

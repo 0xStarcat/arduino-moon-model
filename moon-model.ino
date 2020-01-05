@@ -3,10 +3,9 @@
 
 #include "ephemeris/Calendar.cpp"
 #include "ephemeris/Ephemeris.cpp"
-#include "time.hpp"
 #include "utilities.hpp"
 #include "drawMoon.hpp"
-#include <DS1307RTC.h>
+#include <RTClib.h>
 
 // #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
@@ -21,61 +20,70 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-const uint8_t UPDATE_SPEED = 10; // seconds
-uint8_t secondCounter = 0;       // counts seconds until update calc/paint
-
 DrawConstants drawConstants;
 
-tmElements_t tm = TimeWrapper::getSystemTime();
+RTC_DS3231 rtc;
 
+const uint8_t UPDATE_SPEED = 10; // seconds
+uint8_t secondCounter = 0;       // counts seconds until update calc/paint
+uint8_t lastSecond = 0;
 void setup()
 {
   Serial.begin(9600);
-  RTC.write(tm);
+  if (!rtc.begin())
+  {
+    Serial.println("Couldn't find RTC");
+    while (1)
+      ;
+  }
 
-  // Serial.println("Beginning!");
-  // Serial.println("********************");
-  // Serial.println("Dimensions: ");
-  // Serial.print("X: ");
-  // Serial.println(tft.width());
-  // Serial.print("Y: ");
-  // Serial.println(tft.height());
+  // if (rtc.lostPower())
+  // {
+  //   Serial.println("RTC lost power, lets set the time!");
+  //   // following line sets the RTC to the date & time this sketch was compiled
+  //   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  //   // This line sets the RTC with an explicit date & time, for example to set
+  //   // January 21, 2014 at 3am you would call:
+  //   // rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
+  // }
 
   initialize();
-}
+};
 
 void loop()
 {
-  // assign lastSecond for comparison later
-  int lastSecond = tm.Second;
-  RTC.read(tm);
+  DateTime tm = rtc.now();
 
   if (secondCounter >= UPDATE_SPEED)
   {
     // reset secondCounter
-    secondCounter = 0;
-    Serial.println("*********************");
+    secondCounter = 1;
+    Serial.print("*** ");
     printTime(tm);
-    drawMoonToMeasurements();
+    LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
+
+    drawMoonToMeasurements(tm, lunar);
+    drawHoroscopeSign(lunar, drawConstants);
   }
   // only increment secondCounter when click increments 1 second
-  else if (tm.Second != lastSecond)
+  else if (tm.second() != lastSecond)
   {
     secondCounter += 1;
+    lastSecond = tm.second();
   }
-}
+};
 
 void initialize()
 {
-  // Serial.println("Initializing...");
-  // tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
+  Serial.println("Initializing...");
+  tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
 
-  tft.setRotation(0);
+  // tft.setRotation(0);
 
   // SET GLOBAL VARIABLES after init because otherwise dimensions are bad
-  drawConstants.moonPadding = 2; // px
-  drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
-  drawConstants.moonCenterY = (tft.height() - drawConstants.moonPadding) / 2;
+  // drawConstants.moonPadding = 2; // px
+  drawConstants.moonCenterX = (tft.width() - 2) / 2;
+  drawConstants.moonCenterY = (tft.height() - 2) / 2;
   drawConstants.moonRadius = drawConstants.moonCenterX / 2;
 
   // Debug variables
@@ -87,16 +95,18 @@ void initialize()
   // Serial.print("Moon radius: ");
   // Serial.println(drawConstants.moonRadius);
 
-  // Get time
-  RTC.read(tm);
-
   // Init first draw
-  drawMoonToMeasurements();
+  DateTime tm = rtc.now();
+  printTime(tm);
+
+  LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
+
+  drawMoonToMeasurements(tm, lunar);
+  drawHoroscopeSign(lunar, drawConstants);
 };
 
-void drawMoonToMeasurements()
+void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
 {
-  LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.Day, tm.Month, tmYearToCalendar(tm.Year), tm.Hour, tm.Minute, tm.Second);
 
   // Debug with potentiometers
   // int sensorIlluminationValue = analogRead(A0);
@@ -115,20 +125,26 @@ void drawMoonToMeasurements()
 
   tft.fillScreen(ST7735_BLACK);
   DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
+  float phaseMult = lunar.phaseDecimal * 4;
 
   if (lunar.phaseDecimal <= 0.5)
   {
-    int startAngle = 0;
-    float radiusMultiplier = lunar.phaseDecimal * 4;
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
+
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 0, phaseMult, ST7735_WHITE);
   }
   else
   {
-    int startAngle = 180;
-    float radiusMultiplier = 4 - (lunar.phaseDecimal * 4);
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
+
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 180, 4 - (phaseMult), ST7735_WHITE);
   };
-}
+
+  DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
+};
+
+void drawHoroscopeSign(LunarPhaseMeasures lunar, DrawConstants drawConstants)
+{
+  DrawMoon::drawSignAtPosition(tft, drawConstants, lunar.apparentLongitude);
+};
 
 void printSign(LunarPhaseMeasures lunar)
 {
@@ -142,28 +158,30 @@ void printLunarMeasures(LunarPhaseMeasures lunar)
 {
   // Serial.print("Longitude: ");
   // Serial.println(lunar.apparentLongitude, 4);
-  printSign(lunar);
-  Serial.print("Illumination: ");
+  // printSign(lunar);
+  Serial.print("IF: ");
   Serial.println(lunar.illuminatedFraction, 4);
-  Serial.print("Phase Decimal: ");
+  Serial.print("PD: ");
   Serial.println(lunar.phaseDecimal, 4);
-}
+  Serial.print("AL: ");
+  Serial.println(lunar.apparentLongitude, 4);
+};
 
-void printTime(tmElements_t tm)
+void printTime(DateTime tm)
 {
-  Serial.print(String(tm.Month));
+  Serial.print(tm.month());
   Serial.print("/");
-  Serial.print(String(tm.Day));
+  Serial.print(tm.day());
   Serial.print("/");
-  Serial.print(String(tmYearToCalendar(tm.Year)));
+  Serial.print(tm.year());
   Serial.print(" -- ");
-  print2digits(tm.Hour);
+  print2digits(tm.hour());
   Serial.print(":");
-  print2digits(tm.Minute);
+  print2digits(tm.minute());
   Serial.print(":");
-  print2digits(tm.Second);
+  print2digits(tm.second());
   Serial.println();
-}
+};
 
 void print2digits(int number)
 {
@@ -172,4 +190,4 @@ void print2digits(int number)
     Serial.write('0');
   }
   Serial.print(number);
-}
+};

@@ -64,7 +64,6 @@ GeocentricCoordinates Ephemeris::geocentricCoordinatesForEarthsMoon(FLOAT T)
   FLOAT SUM_DIST = Ephemeris::sumLunarDistanceTerms(E, D, M, M1, F);
   FLOAT SUM_LAT = Ephemeris::sumLunarLatitudeTerms(E, L1, D, M, M1, F, A1, A3);
 
- 
   GeocentricCoordinates coords;
 
   FLOAT nutationLon = 0.00461;                                                 // nutation in degrees
@@ -205,7 +204,9 @@ FLOAT Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, Geocentr
 
   phaseAngle = LIMIT_DEGREES_TO_180(phaseAngle);
 
-  return (1 + COSD(phaseAngle)) / 2;
+  FLOAT illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
+
+  return illuminatedFraction;
 }
 
 FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
@@ -268,8 +269,9 @@ double Ephemeris::getLunarPhaseDecimal(GeocentricCoordinates moonCoords, Geocent
   // Astronomical Algorithims (2015) Jean Meeus - Ch 49 pg 349.
   // get difference in longitude between moon - sun
   double phaseDecimal = LIMIT_DEGREES_TO_360(moonCoords.lon - sunCoords.lon);
+  phaseDecimal = phaseDecimal / 360;
 
-  return phaseDecimal / 360;
+  return phaseDecimal;
 };
 
 double Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
