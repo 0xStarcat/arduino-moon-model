@@ -1,4 +1,5 @@
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#define COLOR_DARK_SKY_BLUE 258
 
 struct DrawConstants
 {

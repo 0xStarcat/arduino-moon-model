@@ -23,6 +23,9 @@
 #define SET_UTC_TIME 0
 #define DEBUG 0
 
+// Switch to using POTS controll instead of actual calculations
+#define POTS 0
+
 // Define hours to convert local time to UTC time.
 // Remember to account for daylight savings if in effect.
 // EST = -5 so TIMEZONE_OFFSET = 5;
@@ -30,15 +33,17 @@
 // GMT = +1 so TIMEZONE_OFFSET = -1;
 #define TIMEZONE_OFFSET 5
 
+#define UPDATE_SPEED 10 // > 1!
+
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 DrawConstants drawConstants;
 
 RTC_DS3231 rtc;
 
-const uint8_t UPDATE_SPEED = 10; // seconds
-uint8_t secondCounter = 0;       // counts seconds until update calc/paint
+uint8_t secondCounter = 0; // counts seconds until update calc/paint
 uint8_t lastSecond = 0;
+
 void setup()
 {
   Serial.begin(9600);
@@ -107,6 +112,7 @@ void initialize()
   // Serial.print("Moon radius: ");
   // Serial.println(drawConstants.moonRadius);
 
+  tft.fillScreen(COLOR_DARK_SKY_BLUE);
   drawRealTimeData();
 };
 
@@ -118,13 +124,34 @@ void drawRealTimeData()
   printTime(tm);
 #endif
 
+#if !POTS
   LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
+#endif
+
+#if POTS
+  // Debug with potentiometers
+  int sensorIlluminationValue = analogRead(A0);
+  float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
+  outputIlluminationValue = (outputIlluminationValue / 1000) - 0.05;
+
+  // int sensorPhaseValue = analogRead(A1);
+  // float outputPhaseValue = map(sensorPhaseValue, 0, 1023, 0, 1000);
+  // outputPhaseValue = (outputPhaseValue / 1000) - 0.05;
+
+  int sensorApparentLongitude = analogRead(A1);
+  float outputLongitudeValue = map(sensorApparentLongitude, 0, 1023, 0, 360);
+
+  LunarPhaseMeasures lunar;
+  lunar.apparentLongitude = outputLongitudeValue;
+  lunar.illuminatedFraction = outputIlluminationValue;
+// lunar.phaseDecimal = outputPhaseValue;
+#endif
 
 #if DEBUG
   printLunarMeasures(lunar);
 #endif
 
-  tft.fillScreen(ST7735_BLACK);
+  // tft.fillScreen(COLOR_DARK_SKY_BLUE);
   drawHoroscopeSign(lunar, drawConstants);
   drawMoonToMeasurements(tm, lunar);
 }
@@ -132,21 +159,8 @@ void drawRealTimeData()
 void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
 {
 
-  // Debug with potentiometers
-  // int sensorIlluminationValue = analogRead(A0);
-  // float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
-  // outputIlluminationValue = (outputIlluminationValue / 1000) - 0.05;
-  // int sensorPhaseValue = analogRead(A1);
-  // float outputPhaseValue = map(sensorPhaseValue, 0, 1023, 0, 1000);
-  // outputPhaseValue = (outputPhaseValue / 1000) - 0.05;
+  // DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_BLACK);
 
-  // Debug mode with potentiometers
-  // LunarPhaseMeasures lunar;
-  // lunar.apparentLongitude = 0;
-  // lunar.illuminatedFraction = outputIlluminationValue;
-  // lunar.phaseDecimal = outputPhaseValue;
-
-  DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
   // float phaseMult = lunar.phaseDecimal * 4; // fill based on phaseDecimal
   float phaseMult = lunar.illuminatedFraction * 2; // fill based on illuminatedFraction
   if (lunar.phaseDecimal <= 0.5)
@@ -161,8 +175,6 @@ void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
     float radiusMultiplier = phaseMult;
     DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 180, radiusMultiplier, ST7735_WHITE);
   };
-
-  // DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_WHITE);
 };
 
 void drawHoroscopeSign(LunarPhaseMeasures lunar, DrawConstants drawConstants)
