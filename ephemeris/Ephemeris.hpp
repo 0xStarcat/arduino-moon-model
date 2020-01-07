@@ -16,12 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-
 // To speed up upload, you can disable planets calculations if not needed.
 // VSOP87 and ELP2000 will not be loaded and solarSystemObjectAtDateAndTime()
 // will simply return an empty object.
-#define DISABLE_PLANETS 0
 
 #ifndef Ephemeris_h
 #define Ephemeris_h
@@ -107,10 +104,10 @@ public:
   static void setLocationOnEarth(FLOAT latDegrees, FLOAT latMinutes, FLOAT latSeconds,
                                  FLOAT lonDegrees, FLOAT lonMinutes, FLOAT lonSeconds);
 
-  static FLOAT getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
+  static double getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
-  static FLOAT getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                 unsigned int hours, unsigned int minutes, unsigned int seconds);
+  static double getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
 
   static double getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
@@ -138,14 +135,14 @@ private:
 
   /*! Compute lunar longitude terms.
      *  Reference: Chapter 47 (2015), page 339. */
-  static FLOAT sumLunarLongitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOAT M1, FLOAT F, FLOAT A1, FLOAT A2);
+  static double sumLunarLongitudeTerms(double E, double L1, double D, double M, double M1, double F, double A1, double A2);
 
   /*! Compute lunar distance terms.
      *  Reference: Chapter 47 (2015), page 341. */
-  static FLOAT sumLunarDistanceTerms(FLOAT E, FLOAT D, FLOAT M, FLOAT M1, FLOAT F);
+  static double sumLunarDistanceTerms(double E, double D, double M, double M1, double F);
 
   /*! Compute lunar latitude terms.
      *  Reference: Chapter 47 (2015), page 341. */
-  static FLOAT sumLunarLatitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOAT M1, FLOAT F, FLOAT A1, FLOAT A3);
+  static double sumLunarLatitudeTerms(double E, double L1, double D, double M, double M1, double F, double A1, double A3);
 };
 #endif

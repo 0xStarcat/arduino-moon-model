@@ -1,7 +1,6 @@
 #include "../Ephemeris.hpp"
 #include <math.h>
 
-#if !DISABLE_PLANETS
 GeocentricCoordinates Ephemeris::geocentricCoordinatesForSun(FLOAT T)
 {
   /*
@@ -55,4 +54,3 @@ GeocentricCoordinates Ephemeris::geocentricCoordinatesForSun(FLOAT T)
 
   return coords;
 }
-#endif

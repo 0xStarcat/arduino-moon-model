@@ -163,16 +163,15 @@ void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
 
   // float phaseMult = lunar.phaseDecimal * 4; // fill based on phaseDecimal
   float phaseMult = lunar.illuminatedFraction * 2; // fill based on illuminatedFraction
+  float radiusMultiplier = phaseMult;
   if (lunar.phaseDecimal <= 0.5)
   {
 
-    float radiusMultiplier = phaseMult;
     DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 0, radiusMultiplier, ST7735_WHITE);
   }
   else
   {
-    // float radiusMultiplier = 4 - phaseMult; // fill based on phaseDecimal
-    float radiusMultiplier = phaseMult;
+    // radiusMultiplier = 4 - phaseMult; // fill based on phaseDecimal
     DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 180, radiusMultiplier, ST7735_WHITE);
   };
 };

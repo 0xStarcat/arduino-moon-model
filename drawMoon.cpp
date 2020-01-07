@@ -106,8 +106,9 @@ void drawM(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   tft.drawLine(x + 10, y + 3, x + 10, y + 12, color);
 };
 
-void drawAries(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawAries(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_RED;
   // tft.drawLine(x + 2, y + 3, x + 2, y + 5, color);
   // tft.drawLine(x + 3, y + 2, x + 5, y + 2, color);
   // tft.drawLine(x + 6, y + 3, x + 6, y + 4, color);
@@ -126,8 +127,9 @@ void drawAries(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   tft.drawLine(x + 10, y + 2, x + 12, y + 4, color);
 };
 
-void drawTaurus(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawTaurus(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_GREEN;
   tft.drawCircle(x + 7, y + 8, 3, color);
   tft.drawLine(x + 3, y + 3, x + 5, y + 5, color);
 
@@ -141,24 +143,27 @@ void drawTaurus(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   // tft.drawLine(x + 9, y + 5, x + 10, y + 5, color);
 };
 
-void drawGemini(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawGemini(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_YELLOW;
   tft.drawLine(x + 4, y + 4, x + 11, y + 4, color);
   tft.drawLine(x + 4, y + 12, x + 11, y + 12, color);
   tft.drawLine(x + 6, y + 4, x + 6, y + 12, color);
   tft.drawLine(x + 9, y + 4, x + 9, y + 12, color);
 };
 
-void drawCancer(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawCancer(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_BLUE;
   tft.drawCircle(x + 4, y + 5, 3, color);
   tft.drawCircle(x + 10, y + 10, 3, color);
   tft.drawLine(x + 4, y + 2, x + 12, y + 2, color);
   tft.drawLine(x + 4, y + 13, x + 12, y + 13, color);
 };
 
-void drawLeo(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawLeo(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_RED;
   tft.drawCircle(x + 5, y + 7, 3, color);
   // tft.drawLine(x + 5, y + 4, x + 5, y + 2, color);
   // tft.drawLine(x + 6, y + 2, x + 9, y + 2, color);
@@ -168,30 +173,33 @@ void drawLeo(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   tft.drawLine(x + 10, y + 12, x + 12, y + 12, color);
 };
 
-void drawVirgo(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawVirgo(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_GREEN;
   drawM(tft, x, y, color);
   tft.drawLine(x + 11, y + 4, x + 13, y + 4, color);
   tft.drawLine(x + 13, y + 4, x + 13, y + 7, color);
   tft.drawLine(x + 13, y + 7, x + 6, y + 13, color);
 };
 
-void drawLibra(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawLibra(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_YELLOW;
   tft.drawCircle(x + 7, y + 5, 2, color);
   tft.drawLine(x + 2, y + 8, x + 13, y + 8, color);
   tft.drawLine(x + 2, y + 11, x + 13, y + 11, color);
 };
 
-void drawScorpio(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawScorpio(Adafruit_ST7735 tft, int x, int y)
 {
+  uint16_t color = ST7735_BLUE;
   drawM(tft, x, y, color);
   tft.drawLine(x + 11, y + 12, x + 13, y + 12, color);
 };
 
-void drawSagittarius(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawSagittarius(Adafruit_ST7735 tft, int x, int y)
 {
-
+  uint16_t color = ST7735_RED;
   tft.drawLine(x + 3, y + 12, x + 12, y + 3, color);
   // tft.drawTriangle(x + 8, y + 3, x + 12, y + 3, x + 12, y + 7, color);
   tft.drawLine(x + 8, y + 3, x + 12, y + 3, color);
@@ -199,9 +207,9 @@ void drawSagittarius(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   tft.drawLine(x + 4, y + 7, x + 8, y + 11, color);
 };
 
-void drawCapricorn(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawCapricorn(Adafruit_ST7735 tft, int x, int y)
 {
-
+  uint16_t color = ST7735_GREEN;
   tft.drawLine(x + 2, y + 2, x + 5, y + 10, color);
   tft.drawLine(x + 5, y + 10, x + 8, y + 2, color);
   tft.drawLine(x + 8, y + 2, x + 10, y + 10, color);
@@ -209,9 +217,9 @@ void drawCapricorn(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   tft.drawLine(x + 5, y + 13, x + 10, y + 13, color);
 };
 
-void drawAquarius(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawAquarius(Adafruit_ST7735 tft, int x, int y)
 {
-
+  uint16_t color = ST7735_YELLOW;
   for (int i = 0; i < 5; i += 4)
   {
     tft.drawLine(x + 1, y + 6 + i, x + 4, y + 4 + i, color);
@@ -223,9 +231,9 @@ void drawAquarius(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   }
 };
 
-void drawPisces(Adafruit_ST7735 tft, int x, int y, uint16_t color)
+void drawPisces(Adafruit_ST7735 tft, int x, int y)
 {
-
+  uint16_t color = ST7735_BLUE;
   tft.drawLine(x + 5, y + 4, x + 3, y + 2, color);
   tft.drawLine(x + 5, y + 4, x + 5, y + 10, color);
   tft.drawLine(x + 5, y + 10, x + 3, y + 13, color);
@@ -237,58 +245,35 @@ void drawPisces(Adafruit_ST7735 tft, int x, int y, uint16_t color)
   tft.drawLine(x + 4, y + 7, x + 10, y + 7, color);
 };
 
-void drawSign(Adafruit_ST7735 tft, int x, int y, int i, uint16_t color)
+void drawSign(Adafruit_ST7735 tft, int x, int y, int i)
 {
   switch (i)
   {
   case 0:
-    return drawAries(tft, x, y, color);
+    return drawAries(tft, x, y);
   case 1:
-    return drawTaurus(tft, x, y, color);
+    return drawTaurus(tft, x, y);
   case 2:
-    return drawGemini(tft, x, y, color);
+    return drawGemini(tft, x, y);
   case 3:
-    return drawCancer(tft, x, y, color);
+    return drawCancer(tft, x, y);
   case 4:
-    return drawLeo(tft, x, y, color);
+    return drawLeo(tft, x, y);
   case 5:
-    return drawVirgo(tft, x, y, color);
+    return drawVirgo(tft, x, y);
   case 6:
-    return drawLibra(tft, x, y, color);
+    return drawLibra(tft, x, y);
   case 7:
-    return drawScorpio(tft, x, y, color);
+    return drawScorpio(tft, x, y);
   case 8:
-    return drawSagittarius(tft, x, y, color);
+    return drawSagittarius(tft, x, y);
   case 9:
-    return drawCapricorn(tft, x, y, color);
+    return drawCapricorn(tft, x, y);
   case 10:
-    return drawAquarius(tft, x, y, color);
+    return drawAquarius(tft, x, y);
   case 11:
-    return drawPisces(tft, x, y, color);
+    return drawPisces(tft, x, y);
   };
-};
-
-uint16_t getSignColor(int index)
-{
-  switch (index)
-  {
-  case 0:
-  case 4:
-  case 8:
-    return ST7735_RED; // fire signs
-  case 1:
-  case 5:
-  case 9:
-    return ST7735_GREEN; // earth signs
-  case 2:
-  case 6:
-  case 10:
-    return ST7735_YELLOW; // air signs
-  case 3:
-  case 7:
-  case 11:
-    return ST7735_BLUE; // water signs
-  }
 };
 
 double getRadialX(DrawConstants drawConstants, double radians, float padding)
@@ -335,7 +320,7 @@ void DrawMoon::drawSignAtPosition(Adafruit_ST7735 tft, DrawConstants drawConstan
     double y = getRadialY(drawConstants, boundaryRadians, zodiacPadding);
 
     // tft.drawRect(px - markerOffset, py - markerOffset, 16, 16, ST7735_RED);
-    // drawSign(tft, px - markerOffset, py - markerOffset, i - iStart, getSignColor(index));
+    // drawSign(tft, px - markerOffset, py - markerOffset, i - iStart);
 
     // Draws zodiac boundaries
     tft.drawLine(x, y, x, y, ST7735_WHITE);
@@ -358,7 +343,7 @@ void DrawMoon::drawSignAtPosition(Adafruit_ST7735 tft, DrawConstants drawConstan
     if (index == i - iStart)
     {
       // Draws glyph
-      drawSign(tft, px - markerOffset, py - markerOffset, index, getSignColor(index));
+      drawSign(tft, px - markerOffset, py - markerOffset, index);
       tft.drawCircle(ppx, ppy, 1, ST7735_MAGENTA);
     };
   };
