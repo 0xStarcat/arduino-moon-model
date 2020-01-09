@@ -91,7 +91,7 @@ void loop()
 void initialize()
 {
 #if DEBUG
-  Serial.println("Initializing...");
+  Serial.println("Init...");
 #endif
   tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
 
@@ -151,7 +151,8 @@ void drawRealTimeData()
   printLunarMeasures(lunar);
 #endif
 
-  // tft.fillScreen(COLOR_DARK_SKY_BLUE);
+  // calculationTest();
+
   drawHoroscopeSign(lunar, drawConstants);
   drawMoonToMeasurements(tm, lunar);
 }
@@ -192,23 +193,23 @@ void printSign(LunarPhaseMeasures lunar)
 void printLunarMeasures(LunarPhaseMeasures lunar)
 {
   // printSign(lunar);
-  Serial.print("IF: ");
+  Serial.print("I: ");
   Serial.println(lunar.illuminatedFraction, 4);
-  Serial.print("PD: ");
+  Serial.print("P: ");
   Serial.println(lunar.phaseDecimal, 4);
-  Serial.print("AL: ");
+  Serial.print("A: ");
   Serial.println(lunar.apparentLongitude, 4);
 };
 
 void printTime(DateTime tm)
 {
-  Serial.print("*** ");
+  Serial.print("* ");
   Serial.print(tm.month());
   Serial.print("/");
   Serial.print(tm.day());
   Serial.print("/");
   Serial.print(tm.year());
-  Serial.print(" -- ");
+  Serial.print(" - ");
   print2digits(tm.hour());
   Serial.print(":");
   print2digits(tm.minute());
@@ -225,3 +226,11 @@ void print2digits(int number)
   }
   Serial.print(number);
 };
+
+// void calculationTest()
+// {
+//   DateTime tm2 = DateTime(2020, 6, 20, 10, 12, 0);
+//   LunarPhaseMeasures lunar2 = Ephemeris::getLunarPhaseMeasures(tm2.day(), tm2.month(), tm2.year(), tm2.hour(), tm2.minute(), 0);
+//   printTime(tm2);
+//   printLunarMeasures(lunar2);
+// }
