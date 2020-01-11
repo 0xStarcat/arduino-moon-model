@@ -55,42 +55,74 @@ tmElements_t TimeWrapper::getSystemTime()
   return tm;
 }
 
-const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+const PROGMEM uint8_t daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-DateTime TimeWrapper::toUtcTime(uint8_t tzOffset, DateTime tm)
+DateTime handleMonthOffset(DateTime tm, uint8_t monthOffset = 0)
 {
-  Serial.println("Setting UTC time...");
+  uint8_t ss = tm.second();
+  uint8_t mm = tm.minute();
+  uint8_t hh = tm.hour();
+  uint16_t d = tm.day();
+  uint16_t m = monthOffset;
+  uint16_t y = tm.year();
+
+  // if month > 12
+  while (m > 12)
+  {
+    m -= 12;
+    y += 1;
+  }
+
+  DateTime time = DateTime(y, m, d, hh, mm, ss);
+  return time;
+}
+
+DateTime handleDayOffset(DateTime tm, uint16_t dayOffset)
+{
+  uint8_t ss = tm.second();
+  uint8_t mm = tm.minute();
+  uint8_t hh = tm.hour();
+  uint16_t d = dayOffset;
+  uint16_t m = tm.month();
+  uint16_t y = tm.year();
+
+  while (d > pgm_read_byte(&daysInMonth[m - 1]))
+  {
+
+    d -= pgm_read_byte(&daysInMonth[m - 1]);
+    m += 1;
+  }
+
+  tm = DateTime(y, m, d, hh, mm, ss);
+  tm = handleMonthOffset(tm, m);
+
+  DateTime time = DateTime(tm.year(), tm.month(), tm.day(), hh, mm, ss);
+  return time;
+}
+
+DateTime TimeWrapper::setTimeOffset(DateTime tm, uint8_t hourOffset, uint16_t dayOffset)
+{
+  // Serial.println("Setting time offset...");
 
   uint8_t ss = tm.second();
   uint8_t mm = tm.minute();
   uint8_t hh = tm.hour();
-  uint8_t d = tm.day();
+  uint16_t d = tm.day();
   uint8_t m = tm.month();
   uint16_t y = tm.year();
 
-  hh += tzOffset;
+  hh += hourOffset;
+  d += dayOffset;
 
   // if hour is 24+
-  if (hh > 23)
+  while (hh >= 24)
   {
     hh -= 24;
     d += 1;
-
-    // If days are > days in month
-    if (d > daysInMonth[m + 1])
-    {
-      d = 1;
-      m += 1;
-
-      // if month > 12
-      if (m > 12)
-      {
-        m = 1;
-        y += 1;
-      }
-    }
   }
+  tm = DateTime(y, m, d, hh, mm, ss);
+  tm = handleDayOffset(tm, d);
 
-  DateTime time = DateTime(y, m, d, hh, mm, ss);
+  DateTime time = DateTime(tm.year(), tm.month(), tm.day(), hh, mm, ss);
   return time;
 }

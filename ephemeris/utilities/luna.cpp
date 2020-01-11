@@ -13,55 +13,55 @@ GeocentricCoordinates Ephemeris::geocentricCoordinatesForEarthsMoon(FLOAT T)
 
   // 47.1
   // Moon's mean longitude (degrees)
-  double L1 = LIMIT_DEGREES_TO_360(218.3164477 +
-                                   (481267.88123421 * T) -
-                                   (0.0015786 * T2) +
-                                   (T3 / 538841) -
-                                   (T4 / 65194000));
+  FLOAT L1 = LIMIT_DEGREES_TO_360(218.3164477 +
+                                  (481267.88123421 * T) -
+                                  (0.0015786 * T2) +
+                                  (T3 / 538841) -
+                                  (T4 / 65194000));
 
   // 47.2
   // Moon's mean elongation (degrees)
-  double D = LIMIT_DEGREES_TO_360(297.8501921 +
-                                  (445267.1114034 * T) -
-                                  (0.0018819 * T2) +
-                                  (T3 / 545868) -
-                                  (T4 / 113065000));
+  FLOAT D = LIMIT_DEGREES_TO_360(297.8501921 +
+                                 (445267.1114034 * T) -
+                                 (0.0018819 * T2) +
+                                 (T3 / 545868) -
+                                 (T4 / 113065000));
 
   // 47.3
   // Sun's mean anomaly (degrees)
-  double M = LIMIT_DEGREES_TO_360(357.5291092 +
-                                  (35999.0502909 * T) -
-                                  (0.0001536 * T2) +
-                                  (T3 / 24490000));
+  FLOAT M = LIMIT_DEGREES_TO_360(357.5291092 +
+                                 (35999.0502909 * T) -
+                                 (0.0001536 * T2) +
+                                 (T3 / 24490000));
 
   // 47.4
   // Moon's mean anomaly (degrees)
-  double M1 = LIMIT_DEGREES_TO_360(134.9633964 +
-                                   (477198.8675055 * T) +
-                                   (0.0087414 * T2) +
-                                   (T3 / 69699) -
-                                   (T4 / 14712000));
+  FLOAT M1 = LIMIT_DEGREES_TO_360(134.9633964 +
+                                  (477198.8675055 * T) +
+                                  (0.0087414 * T2) +
+                                  (T3 / 69699) -
+                                  (T4 / 14712000));
 
   // 47.5
   // Mean distance of moon from its ascending node (degrees)
-  double F = LIMIT_DEGREES_TO_360(93.2720950 +
-                                  (483202.0175233 * T) -
-                                  (0.0036539 * T2) -
-                                  (T3 / 3526000) +
-                                  (T4 / 863310000));
+  FLOAT F = LIMIT_DEGREES_TO_360(93.2720950 +
+                                 (483202.0175233 * T) -
+                                 (0.0036539 * T2) -
+                                 (T3 / 3526000) +
+                                 (T4 / 863310000));
 
   // Further args (in degrees)
-  double A1 = LIMIT_DEGREES_TO_360(119.75 + (131.849 * T));
-  double A2 = LIMIT_DEGREES_TO_360(53.09 + (479264.290 * T));
-  double A3 = LIMIT_DEGREES_TO_360(313.45 + (481266.484 * T));
+  FLOAT A1 = LIMIT_DEGREES_TO_360(119.75 + (131.849 * T));
+  FLOAT A2 = LIMIT_DEGREES_TO_360(53.09 + (479264.290 * T));
+  FLOAT A3 = LIMIT_DEGREES_TO_360(313.45 + (481266.484 * T));
 
   // 47.6
   // Eccentricity of earth's orbit around sun
-  double E = LIMIT_DEGREES_TO_360(1 - (0.002516 * T) - (0.0000074 * T2));
+  FLOAT E = LIMIT_DEGREES_TO_360(1 - (0.002516 * T) - (0.0000074 * T2));
 
-  double SUM_LON = Ephemeris::sumLunarLongitudeTerms(E, L1, D, M, M1, F, A1, A2);
-  double SUM_DIST = Ephemeris::sumLunarDistanceTerms(E, D, M, M1, F);
-  double SUM_LAT = Ephemeris::sumLunarLatitudeTerms(E, L1, D, M, M1, F, A1, A3);
+  FLOAT SUM_LON = Ephemeris::sumLunarLongitudeTerms(E, L1, D, M, M1, F, A1, A2);
+  FLOAT SUM_DIST = Ephemeris::sumLunarDistanceTerms(E, D, M, M1, F);
+  FLOAT SUM_LAT = Ephemeris::sumLunarLatitudeTerms(E, L1, D, M, M1, F, A1, A3);
 
   GeocentricCoordinates coords;
 
@@ -72,9 +72,9 @@ GeocentricCoordinates Ephemeris::geocentricCoordinatesForEarthsMoon(FLOAT T)
   return coords;
 };
 
-double Ephemeris::sumLunarLongitudeTerms(double E, double L1, double D, double M, double M1, double F, double A1, double A2)
+FLOAT Ephemeris::sumLunarLongitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOAT M1, FLOAT F, FLOAT A1, FLOAT A2)
 {
-  double sum = 0;
+  FLOAT sum = 0;
   int termCount = sizeof(moonLongitudeELP) / sizeof(LunaPeriodicTerm);
 
   for (int termIndex = 0; termIndex < termCount; termIndex++)
@@ -97,9 +97,9 @@ double Ephemeris::sumLunarLongitudeTerms(double E, double L1, double D, double M
   return sum;
 };
 
-double Ephemeris::sumLunarDistanceTerms(double E, double D, double M, double M1, double F)
+FLOAT Ephemeris::sumLunarDistanceTerms(FLOAT E, FLOAT D, FLOAT M, FLOAT M1, FLOAT F)
 {
-  double sum = 0;
+  FLOAT sum = 0;
   int termCount = sizeof(moonDistanceELP) / sizeof(LunaPeriodicTerm);
 
   for (int termIndex = 0; termIndex < termCount; termIndex++)
@@ -121,9 +121,9 @@ double Ephemeris::sumLunarDistanceTerms(double E, double D, double M, double M1,
   return sum;
 };
 
-double Ephemeris::sumLunarLatitudeTerms(double E, double L1, double D, double M, double M1, double F, double A1, double A3)
+FLOAT Ephemeris::sumLunarLatitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOAT M1, FLOAT F, FLOAT A1, FLOAT A3)
 {
-  double sum = 0;
+  FLOAT sum = 0;
   int termCount = sizeof(moonLatitudeELP) / sizeof(LunaPeriodicTerm);
 
   for (int termIndex = 0; termIndex < termCount; termIndex++)
@@ -164,7 +164,7 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
   return lunarPhaseMeasures;
 };
 
-double Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
+FLOAT Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
 {
 
   /* 
@@ -188,25 +188,25 @@ double Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, Geocent
  */
 
   // 48.2 -- alt
-  double geocentricElongation = ACOSD(
+  FLOAT geocentricElongation = ACOSD(
       COSD(moonCoords.lat) *
       COSD(moonCoords.lon - sunCoords.lon));
 
   geocentricElongation = LIMIT_DEGREES_TO_180(geocentricElongation);
 
-  double phaseAngle = ATAND(
+  FLOAT phaseAngle = ATAND(
       (sunCoords.earthDistanceKm * SIND(geocentricElongation)) /
       (moonCoords.earthDistanceKm - (sunCoords.earthDistanceKm * COSD(geocentricElongation))));
 
   phaseAngle = LIMIT_DEGREES_TO_180(phaseAngle);
 
-  double illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
+  FLOAT illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
 
   return illuminatedFraction;
 }
 
-double Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                    unsigned int hours, unsigned int minutes, unsigned int seconds)
+FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                   unsigned int hours, unsigned int minutes, unsigned int seconds)
 {
 
   /*
@@ -225,53 +225,53 @@ double Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned i
 
   // 47.2
   // Moon's mean elongation (degrees)
-  double D = LIMIT_DEGREES_TO_360(297.8501921 +
-                                  (445267.1114034 * T) -
-                                  (0.0018819 * T2) +
-                                  (T3 / 545868) -
-                                  (T4 / 113065000));
+  FLOAT D = LIMIT_DEGREES_TO_360(297.8501921 +
+                                 (445267.1114034 * T) -
+                                 (0.0018819 * T2) +
+                                 (T3 / 545868) -
+                                 (T4 / 113065000));
 
   // 47.3
   // Sun's mean anomaly (degrees)
-  double M = LIMIT_DEGREES_TO_360(357.5291092 +
-                                  (35999.0502909 * T) -
-                                  (0.0001536 * T2) +
-                                  (T3 / 24490000));
+  FLOAT M = LIMIT_DEGREES_TO_360(357.5291092 +
+                                 (35999.0502909 * T) -
+                                 (0.0001536 * T2) +
+                                 (T3 / 24490000));
 
   // 47.4
   // Moon's mean anomaly (degrees)
-  double M1 = LIMIT_DEGREES_TO_360(134.9633964 +
-                                   (477198.8675055 * T) +
-                                   (0.0087414 * T2) +
-                                   (T3 / 69699) -
-                                   (T4 / 14712000));
+  FLOAT M1 = LIMIT_DEGREES_TO_360(134.9633964 +
+                                  (477198.8675055 * T) +
+                                  (0.0087414 * T2) +
+                                  (T3 / 69699) -
+                                  (T4 / 14712000));
 
-  double phaseAngle = 180 -
-                      D -
-                      (6.289 * SIND(M1)) +
-                      (2.1 * SIND(M)) -
-                      (1.274 * SIND(2 * D - M1)) -
-                      (0.658 * SIND(2 * D)) -
-                      (0.214 * SIND(2 * M1)) -
-                      (0.110 * SIND(D));
+  FLOAT phaseAngle = 180 -
+                     D -
+                     (6.289 * SIND(M1)) +
+                     (2.1 * SIND(M)) -
+                     (1.274 * SIND(2 * D - M1)) -
+                     (0.658 * SIND(2 * D)) -
+                     (0.214 * SIND(2 * M1)) -
+                     (0.110 * SIND(D));
 
-  double illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
+  FLOAT illuminatedFraction = (1 + COSD(phaseAngle)) / 2;
 
   return illuminatedFraction;
 }
 
-double Ephemeris::getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
+FLOAT Ephemeris::getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
 {
   // Astronomical Algorithims (2015) Jean Meeus - Ch 49 pg 349.
   // get difference in longitude between moon - sun
-  double phaseDecimal = LIMIT_DEGREES_TO_360(moonCoords.lon - sunCoords.lon);
+  FLOAT phaseDecimal = LIMIT_DEGREES_TO_360(moonCoords.lon - sunCoords.lon);
   phaseDecimal = phaseDecimal / 360;
 
   return phaseDecimal;
 };
 
-double Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                    unsigned int hours, unsigned int minutes, unsigned int seconds)
+FLOAT Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                   unsigned int hours, unsigned int minutes, unsigned int seconds)
 {
   /*
     Astronomical Algorithims (2015) - Jean Meeus - figure 49.2
@@ -308,13 +308,13 @@ double Ephemeris::getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned i
     }
   };
 
-  double secondsElapsedThisYear = ((daysElapsedThisYear + (day - 1)) * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds;
+  FLOAT secondsElapsedThisYear = ((daysElapsedThisYear + (day - 1)) * 24 * 60 * 60) + (hours * 60 * 60) + (minutes * 60) + seconds;
 
   // calculate year in decimal format (ex: 3/31/2010 ~= 2010.25)
-  double yearCalculation = year + (secondsElapsedThisYear / secondsPerYear);
+  FLOAT yearCalculation = year + (secondsElapsedThisYear / secondsPerYear);
 
   // Subtract 2000.0158 to sync to new moon on Jan 6th, 2000 18:13 UTC (rather than by 2000 as in fig 49.1);
-  double phaseDecimal = (yearCalculation - 2000.0158) * 12.3685;
+  FLOAT phaseDecimal = (yearCalculation - 2000.0158) * 12.3685;
 
   // Convert value to 0 - 1 decimal
   phaseDecimal = phaseDecimal - floor(phaseDecimal);

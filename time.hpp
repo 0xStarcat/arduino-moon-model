@@ -11,5 +11,5 @@ public:
 
   static tmElements_t getSystemTime();
 
-  static DateTime toUtcTime(uint8_t tzOffset, DateTime tm);
+  static DateTime setTimeOffset(DateTime tm, uint8_t hourOffset, uint16_t dayOffset = 0);
 };

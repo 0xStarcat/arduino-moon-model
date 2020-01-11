@@ -17,21 +17,27 @@ int main()
 {
 
   TimeObject t;
-  t.Year = 2020;
-  t.Month = 1;
-  t.Day = 6;
-  t.Hour = 23;
-  t.Minute = 40;
-  t.Second = 14;
 
   // Ephemeris::setLocationOnEarth(40.71305, -74.66034); // NYC -- not needed for heliocentric coords
+  for (int day = 1; day <= 28; day++)
+  {
+    for (int hour = 0; hour <= 23; hour++)
+    {
+      t.Year = 2020;
+      t.Month = 2;
+      t.Day = day;
+      t.Hour = hour;
+      t.Minute = 0;
+      t.Second = 0;
 
-  LunarPhaseMeasures lpm = Ephemeris::getLunarPhaseMeasures(t.Day, t.Month, t.Year, t.Hour, t.Minute, t.Second);
-
-  std::cout << "\n******\n";
-  std::cout << "IF: " << std::to_string(lpm.illuminatedFraction) << "\n";
-  std::cout << "PD: " << std::to_string(lpm.phaseDecimal) << "\n";
-  std::cout << "AL: " << std::to_string(lpm.apparentLongitude) << "\n";
+      LunarPhaseMeasures lpm = Ephemeris::getLunarPhaseMeasures(day, t.Month, t.Year, t.Hour, t.Minute, t.Second);
+      // std::cout << "\n******\n";
+      std::cout << std::to_string(lpm.illuminatedFraction) << "\n";
+      // std::cout << std::to_string(lpm.phaseDecimal) << "\n";
+      // std::cout << std::to_string(t.Month) << "/" << std::to_string(t.Day) << "/" << t.Year << std::endl;
+      // std::cout << std::to_string(lpm.apparentLongitude) << "\n";
+    }
+  }
 
   return 0;
 }

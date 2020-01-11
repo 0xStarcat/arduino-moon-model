@@ -84,7 +84,7 @@ struct LunarPhaseMeasures
 {
   FLOAT apparentLongitude;
   FLOAT illuminatedFraction; /* 0 - 1 the % of the moon that's illuminated */
-  double phaseDecimal;       /* 0 - 1 the current phase of the moon. 0 = new, 0.25 = first quarter, 0.5 = full, 0.75 = last quarter */
+  FLOAT phaseDecimal;        /* 0 - 1 the current phase of the moon. 0 = new, 0.25 = first quarter, 0.5 = full, 0.75 = last quarter */
 };
 
 /*!
@@ -104,15 +104,15 @@ public:
   static void setLocationOnEarth(FLOAT latDegrees, FLOAT latMinutes, FLOAT latSeconds,
                                  FLOAT lonDegrees, FLOAT lonMinutes, FLOAT lonSeconds);
 
-  static double getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
+  static FLOAT getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
-  static double getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
+  static FLOAT getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                 unsigned int hours, unsigned int minutes, unsigned int seconds);
 
-  static double getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
+  static FLOAT getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
-  static double getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                  unsigned int hours, unsigned int minutes, unsigned int seconds);
+  static FLOAT getLunarPhaseDecimalLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                 unsigned int hours, unsigned int minutes, unsigned int seconds);
 
   static LunarPhaseMeasures getLunarPhaseMeasures(unsigned int day, unsigned int month, unsigned int year,
                                                   unsigned int hours, unsigned int minutes, unsigned int seconds);
@@ -135,14 +135,14 @@ private:
 
   /*! Compute lunar longitude terms.
      *  Reference: Chapter 47 (2015), page 339. */
-  static double sumLunarLongitudeTerms(double E, double L1, double D, double M, double M1, double F, double A1, double A2);
+  static FLOAT sumLunarLongitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOAT M1, FLOAT F, FLOAT A1, FLOAT A2);
 
   /*! Compute lunar distance terms.
      *  Reference: Chapter 47 (2015), page 341. */
-  static double sumLunarDistanceTerms(double E, double D, double M, double M1, double F);
+  static FLOAT sumLunarDistanceTerms(FLOAT E, FLOAT D, FLOAT M, FLOAT M1, FLOAT F);
 
   /*! Compute lunar latitude terms.
      *  Reference: Chapter 47 (2015), page 341. */
-  static double sumLunarLatitudeTerms(double E, double L1, double D, double M, double M1, double F, double A1, double A3);
+  static FLOAT sumLunarLatitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLOAT M1, FLOAT F, FLOAT A1, FLOAT A3);
 };
 #endif

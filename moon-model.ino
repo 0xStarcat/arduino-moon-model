@@ -3,7 +3,6 @@
 
 #include "ephemeris/Calendar.cpp"
 #include "ephemeris/Ephemeris.cpp"
-#include "utilities.hpp"
 #include "drawMoon.hpp"
 #include "time.hpp"
 #include <RTClib.h>
@@ -22,6 +21,7 @@
 // To reduce compile size & flash memory, only set 1 mode at a time.
 #define SET_UTC_TIME 0
 #define DEBUG 0
+#define CALC_TEST 0
 
 // Switch to using POTS controll instead of actual calculations
 #define POTS 0
@@ -33,7 +33,7 @@
 // GMT = +1 so TIMEZONE_OFFSET = -1;
 #define TIMEZONE_OFFSET 5
 
-#define UPDATE_SPEED 10 // > 1!
+#define UPDATE_SPEED 30 // > 1!
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -43,6 +43,11 @@ RTC_DS3231 rtc;
 
 uint8_t secondCounter = 0; // counts seconds until update calc/paint
 uint8_t lastSecond = 0;
+
+#if CALC_TEST
+uint16_t testDay = 0;
+uint16_t testHour = 0;
+#endif
 
 void setup()
 {
@@ -60,7 +65,7 @@ void setup()
     Serial.println("RTC lost power, lets set the time!");
     // following line sets the RTC to the date & time this sketch was compiled
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    DateTime utcTime = TimeWrapper::toUtcTime(TIMEZONE_OFFSET, rtc.now());
+    DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
     rtc.adjust(utcTime);
   }
 #endif
@@ -78,7 +83,22 @@ void loop()
     // reset secondCounter
     secondCounter = 1;
 
+#if CALC_TEST
+    calculationTest(testHour, testDay);
+#endif
+
+#if !CALC_TEST && !SET_UTC_TIME
     drawRealTimeData();
+#endif
+
+#if CALC_TEST
+    testHour += 1;
+    if (testHour >= 24)
+    {
+      testHour = 0;
+      testDay += 1;
+    }
+#endif
   }
   // only increment secondCounter when click increments 1 second
   else if (currentSecond != lastSecond)
@@ -113,14 +133,21 @@ void initialize()
   // Serial.println(drawConstants.moonRadius);
 
   tft.fillScreen(COLOR_DARK_SKY_BLUE);
+
+#if CALC_TEST
+  calculationTest(testHour, testDay);
+#endif
+
+#if !CALC_TEST && !SET_UTC_TIME
   drawRealTimeData();
+#endif
 };
 
 void drawRealTimeData()
 {
 
   DateTime tm = rtc.now();
-#if DEBUG
+#if DEBUG || SET_UTC_TIME
   printTime(tm);
 #endif
 
@@ -151,9 +178,8 @@ void drawRealTimeData()
   printLunarMeasures(lunar);
 #endif
 
-  // calculationTest();
-
   drawHoroscopeSign(lunar, drawConstants);
+
   drawMoonToMeasurements(tm, lunar);
 }
 
@@ -182,17 +208,8 @@ void drawHoroscopeSign(LunarPhaseMeasures lunar, DrawConstants drawConstants)
   DrawMoon::drawSignAtPosition(tft, drawConstants, lunar.apparentLongitude);
 };
 
-void printSign(LunarPhaseMeasures lunar)
-{
-  int index = floor(lunar.apparentLongitude / 30);
-  char *sign = Utilities::getSignByIndex(index);
-  Serial.print("Sign: ");
-  Serial.println(sign);
-};
-
 void printLunarMeasures(LunarPhaseMeasures lunar)
 {
-  // printSign(lunar);
   Serial.print("I: ");
   Serial.println(lunar.illuminatedFraction, 4);
   Serial.print("P: ");
@@ -227,10 +244,13 @@ void print2digits(int number)
   Serial.print(number);
 };
 
-// void calculationTest()
-// {
-//   DateTime tm2 = DateTime(2020, 6, 20, 10, 12, 0);
-//   LunarPhaseMeasures lunar2 = Ephemeris::getLunarPhaseMeasures(tm2.day(), tm2.month(), tm2.year(), tm2.hour(), tm2.minute(), 0);
-//   printTime(tm2);
-//   printLunarMeasures(lunar2);
-// }
+void calculationTest(uint8_t hour, uint16_t day)
+{
+  DateTime tm = DateTime(2020, 1, 1, 5, 0, 0);
+  DateTime tmOffset = TimeWrapper::setTimeOffset(tm, hour, day);
+  LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tmOffset.day(), tmOffset.month(), tmOffset.year(), tmOffset.hour(), tmOffset.minute(), 0);
+  // printTime(tmOffset);
+  printLunarMeasures(lunar);
+  // drawHoroscopeSign(lunar, drawConstants);
+  // drawMoonToMeasurements(tmOffset, lunar);
+}

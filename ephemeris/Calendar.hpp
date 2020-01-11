@@ -23,7 +23,7 @@
 
 #ifndef FLOAT
 // Change FLOAT according to wanted precision (float or double).
-#define FLOAT float
+#define FLOAT double
 #endif
 
 /*! This structure describes a Julian day with integer and floating value parts.
