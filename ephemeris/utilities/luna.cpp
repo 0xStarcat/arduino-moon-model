@@ -163,7 +163,9 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasuresLowerAccuracy(unsigned int da
 
   JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
   FLOAT T = T_WITH_JD(jd.day, jd.time);
+  GeocentricCoordinates moonCoords = Ephemeris::geocentricCoordinatesForEarthsMoon(T);
 
+  lunarPhaseMeasures.apparentLongitude = moonCoords.lon;
   lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIlluminationLowerAccuracy(T);
   lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimalLowerAccuracy(day, month, year, hours, minutes, seconds);
 

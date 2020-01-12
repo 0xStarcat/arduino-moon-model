@@ -15,12 +15,29 @@
 // Flora does NOT draw horoscope or longitude - not enough flash memory.
 #define FLORA 1
 
+#if FLORA
+#include <Adafruit_NeoPixel.h>
+#include <SoftwareSerial.h>
+#define PIN 8
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN, NEO_GRB + NEO_KHZ800);
+#endif
+
+#if FLORA
+// #define TFT_CLK 10  // SCK A5 // 13
+// #define TFT_POCI 9 // SDI / SDA / A4 // 11
+#define TFT_CS 6 // TCS
+#define TFT_RST 1
+#define TFT_DC 12 // RS
+// #define TFT_PICO 0 // SDI / SDA / A4 // 11
+#else
 // #define TFT_CLK 13  // SCK A5 // 13
 // #define TFT_POCI 11 // SDI / SDA / A4 // 11
-#define TFT_CS 10
+#define TFT_CS 10 // TCS
 #define TFT_RST 9
 #define TFT_DC 8 // RS
 // #define TFT_PICO 0 // SDI / SDA / A4 // 11
+#endif
 
 // To reduce compile size & flash memory, only set 1 mode at a time.
 #define SET_UTC_TIME 0
@@ -56,6 +73,12 @@ uint16_t testHour = 0;
 void setup()
 {
   Serial.begin(9600);
+
+#if SET_UTC_TIME
+  while (!Serial)
+  {
+    ; // wait for serial port to connect.
+  }
   if (!rtc.begin())
   {
     Serial.println("Couldn't find RTC");
@@ -63,7 +86,6 @@ void setup()
       ;
   }
 
-#if SET_UTC_TIME
   if (rtc.lostPower())
   {
     Serial.println("RTC lost power, lets set the time!");
@@ -74,6 +96,12 @@ void setup()
   }
 #endif
 
+#if FLORA
+  strip.begin();
+  strip.setBrightness(50);
+  strip.show(); // Initialize all pixels to 'off'
+#endif
+
   initialize();
 };
 
@@ -81,7 +109,6 @@ void loop()
 {
   DateTime tm = rtc.now();
   int currentSecond = tm.second();
-
   if (secondCounter >= UPDATE_SPEED)
   {
     // reset secondCounter
