@@ -106,8 +106,7 @@ public:
 
   static FLOAT getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
-  static FLOAT getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                 unsigned int hours, unsigned int minutes, unsigned int seconds);
+  static FLOAT getLunarIlluminationLowerAccuracy(FLOAT T);
 
   static FLOAT getLunarPhaseDecimal(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords);
 
@@ -116,6 +115,9 @@ public:
 
   static LunarPhaseMeasures getLunarPhaseMeasures(unsigned int day, unsigned int month, unsigned int year,
                                                   unsigned int hours, unsigned int minutes, unsigned int seconds);
+
+  static LunarPhaseMeasures getLunarPhaseMeasuresLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                               unsigned int hours, unsigned int minutes, unsigned int seconds);
 
 private:
   /* ! Compute sun's heliocentric coordnates.
@@ -127,11 +129,6 @@ private:
     * Reference: Astrological Algorithims (2015) ch 47
   */
   static GeocentricCoordinates geocentricCoordinatesForEarthsMoon(FLOAT T);
-
-  /*! Compute the true obliquity (angle in floating degrees) of the ecliptic,
-     *  delta obliquity and delta nutation for T.
-     *  Reference: Chapter 13, page 53: Nutation et obliquité de l'écliptique. */
-  static FLOAT obliquityAndNutationForT(FLOAT T, FLOAT *deltaObliquity, FLOAT *deltaNutation);
 
   /*! Compute lunar longitude terms.
      *  Reference: Chapter 47 (2015), page 339. */

@@ -11,6 +11,10 @@
 #include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
 #include <SPI.h>
 
+// Devices
+// Flora does NOT draw horoscope or longitude - not enough flash memory.
+#define FLORA 1
+
 // #define TFT_CLK 13  // SCK A5 // 13
 // #define TFT_POCI 11 // SDI / SDA / A4 // 11
 #define TFT_CS 10
@@ -152,10 +156,8 @@ void drawRealTimeData()
 #endif
 
 #if !POTS
-  LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
-#endif
-
-#if POTS
+  LunarPhaseMeasures lunar = getLunar(tm);
+#else
   // Debug with potentiometers
   int sensorIlluminationValue = analogRead(A0);
   float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
@@ -178,10 +180,20 @@ void drawRealTimeData()
   printLunarMeasures(lunar);
 #endif
 
+#if !FLORA
   drawHoroscopeSign(lunar, drawConstants);
-
+#endif
   drawMoonToMeasurements(tm, lunar);
 }
+
+LunarPhaseMeasures getLunar(DateTime tm)
+{
+#if FLORA
+  return Ephemeris::getLunarPhaseMeasuresLowerAccuracy(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
+#else
+  return Ephemeris::getLunarPhaseMeasures(tm.day(), tm.month(), tm.year(), tm.hour(), tm.minute(), 0);
+#endif
+};
 
 void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
 {
@@ -248,7 +260,8 @@ void calculationTest(uint8_t hour, uint16_t day)
 {
   DateTime tm = DateTime(2020, 1, 1, 5, 0, 0);
   DateTime tmOffset = TimeWrapper::setTimeOffset(tm, hour, day);
-  LunarPhaseMeasures lunar = Ephemeris::getLunarPhaseMeasures(tmOffset.day(), tmOffset.month(), tmOffset.year(), tmOffset.hour(), tmOffset.minute(), 0);
+
+  LunarPhaseMeasures lunar = getLunar(tm);
   // printTime(tmOffset);
   printLunarMeasures(lunar);
   // drawHoroscopeSign(lunar, drawConstants);

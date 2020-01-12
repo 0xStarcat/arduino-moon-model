@@ -79,18 +79,14 @@ FLOAT Ephemeris::sumLunarLongitudeTerms(FLOAT E, FLOAT L1, FLOAT D, FLOAT M, FLO
 
   for (int termIndex = 0; termIndex < termCount; termIndex++)
   {
-    LunaPeriodicTerm term;
+    LongDistCoefficients termCo;
+    LongDistMultipliers termM;
 
-#if ARDUINO
-    // We limit SRAM usage by using flash memory (PROGMEM)
-    // memcpy_P(&coef, &valuePlanetCoefficients[termIndex], sizeof(VSOP87Coefficient));
-    term = moonLongitudeELP[termIndex];
-#else
-    term = moonLongitudeELP[termIndex];
-#endif
+    termCo = moonLongitudeELP[termIndex];
+    termM = longDistMultipliers[termCo.multIndex];
 
-    FLOAT workingE = term.multipleM ? pow(E, abs(term.multipleM)) : 1;
-    sum += term.coefficient * workingE * SIND((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
+    FLOAT workingE = termM.multipleM ? pow(E, abs(termM.multipleM)) : 1;
+    sum += termCo.coefficient * workingE * SIND((D * termM.multipleD) + (M * termM.multipleM) + (M1 * termM.multipleM1) + (F * termM.multipleF));
   };
 
   sum += 3958 * SIND(A1) + 1962 * SIND(L1 - F) + 318 * SIND(A2);
@@ -104,18 +100,14 @@ FLOAT Ephemeris::sumLunarDistanceTerms(FLOAT E, FLOAT D, FLOAT M, FLOAT M1, FLOA
 
   for (int termIndex = 0; termIndex < termCount; termIndex++)
   {
-    LunaPeriodicTerm term;
+    LongDistCoefficients termCo;
+    LongDistMultipliers termM;
 
-#if ARDUINO
-    // We limit SRAM usage by using flash memory (PROGMEM)
-    // memcpy_P(&coef, &valuePlanetCoefficients[termIndex], sizeof(VSOP87Coefficient));
-    term = moonDistanceELP[termIndex];
-#else
-    term = moonDistanceELP[termIndex];
-#endif
+    termCo = moonDistanceELP[termIndex];
+    termM = longDistMultipliers[termCo.multIndex];
 
-    FLOAT workingE = term.multipleM ? pow(E, abs(term.multipleM)) : 1;
-    sum += term.coefficient * workingE * SIND((D * term.multipleD) + (M * term.multipleM) + (M1 * term.multipleM1) + (F * term.multipleF));
+    FLOAT workingE = termM.multipleM ? pow(E, abs(termM.multipleM)) : 1;
+    sum += termCo.coefficient * workingE * SIND((D * termM.multipleD) + (M * termM.multipleM) + (M1 * termM.multipleM1) + (F * termM.multipleF));
   };
 
   return sum;
@@ -164,6 +156,20 @@ LunarPhaseMeasures Ephemeris::getLunarPhaseMeasures(unsigned int day, unsigned i
   return lunarPhaseMeasures;
 };
 
+LunarPhaseMeasures Ephemeris::getLunarPhaseMeasuresLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
+                                                                 unsigned int hours, unsigned int minutes, unsigned int seconds)
+{
+  LunarPhaseMeasures lunarPhaseMeasures;
+
+  JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
+  FLOAT T = T_WITH_JD(jd.day, jd.time);
+
+  lunarPhaseMeasures.illuminatedFraction = Ephemeris::getLunarIlluminationLowerAccuracy(T);
+  lunarPhaseMeasures.phaseDecimal = Ephemeris::getLunarPhaseDecimalLowerAccuracy(day, month, year, hours, minutes, seconds);
+
+  return lunarPhaseMeasures;
+};
+
 FLOAT Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, GeocentricCoordinates sunCoords)
 {
 
@@ -205,8 +211,7 @@ FLOAT Ephemeris::getLunarIllumination(GeocentricCoordinates moonCoords, Geocentr
   return illuminatedFraction;
 }
 
-FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned int month, unsigned int year,
-                                                   unsigned int hours, unsigned int minutes, unsigned int seconds)
+FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(FLOAT T)
 {
 
   /*
@@ -215,9 +220,6 @@ FLOAT Ephemeris::getLunarIlluminationLowerAccuracy(unsigned int day, unsigned in
     Lower accuracy formula on pg 346 figure 48.4
     Does not require more expensive lunar position calculations
   */
-
-  JulianDay jd = Calendar::julianDayForDateAndTime(day, month, year, hours, minutes, seconds);
-  FLOAT T = T_WITH_JD(jd.day, jd.time);
 
   FLOAT T2 = T * T;
   FLOAT T3 = T2 * T;

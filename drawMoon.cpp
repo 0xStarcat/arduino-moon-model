@@ -26,6 +26,7 @@ void DrawMoon::drawMoonLight(Adafruit_ST7735 tft, DrawConstants drawConstants, f
     // uint16_t color = (((31 * (rgb + 4)) / 255) << 11) |
     //                  (((63 * (rgb + 2)) / 255) << 5) |
     //                  ((31 * (rgb + 4)) / 255);
+
     uint16_t color = 0;
     if (i <= fillAmount)
     {
@@ -234,15 +235,15 @@ void drawAquarius(Adafruit_ST7735 tft, int x, int y)
 void drawPisces(Adafruit_ST7735 tft, int x, int y)
 {
   uint16_t color = ST7735_BLUE;
-  tft.drawLine(x + 5, y + 4, x + 3, y + 2, color);
-  tft.drawLine(x + 5, y + 4, x + 5, y + 10, color);
-  tft.drawLine(x + 5, y + 10, x + 3, y + 13, color);
+  tft.drawLine(x + 5, y + 3, x + 3, y + 1, color);
+  tft.drawLine(x + 5, y + 3, x + 5, y + 9, color);
+  tft.drawLine(x + 5, y + 9, x + 3, y + 12, color);
 
-  tft.drawLine(x + 9, y + 4, x + 11, y + 2, color);
-  tft.drawLine(x + 9, y + 4, x + 9, y + 10, color);
-  tft.drawLine(x + 9, y + 10, x + 11, y + 13, color);
+  tft.drawLine(x + 9, y + 3, x + 11, y + 1, color);
+  tft.drawLine(x + 9, y + 3, x + 9, y + 9, color);
+  tft.drawLine(x + 9, y + 9, x + 11, y + 12, color);
 
-  tft.drawLine(x + 4, y + 7, x + 10, y + 7, color);
+  tft.drawLine(x + 4, y + 6, x + 10, y + 6, color);
 };
 
 void drawSign(Adafruit_ST7735 tft, int x, int y, int i)
@@ -330,20 +331,21 @@ void DrawMoon::drawSignAtPosition(Adafruit_ST7735 tft, DrawConstants drawConstan
   for (int i = iStart; i < iStart + 12; i++)
   {
     int index = floor(apparentLongitude / 30);
-    // Sign X/Y
-    double radians = -((i * 30) * PI / 180); // start at left of circle, position in betwen divisions
-    double px = getRadialX(drawConstants, radians, signPadding);
-    double py = getRadialY(drawConstants, radians, signPadding);
 
-    // Draws longitude position marker
-    int apLon = (int)apparentLongitude;
-    double positionRadians = -(((((i * 30) - 15) + apLon % 30) * PI / 180)); // set progress position within 30 degree secment
-    double ppx = getRadialX(drawConstants, positionRadians, zodiacPadding);
-    double ppy = getRadialY(drawConstants, positionRadians, zodiacPadding);
     if (index == i - iStart)
     {
       // Draws glyph
+      // Sign X/Y
+      double radians = -((i * 30) * PI / 180); // start at left of circle, position in betwen divisions
+      double px = getRadialX(drawConstants, radians, signPadding);
+      double py = getRadialY(drawConstants, radians, signPadding);
       drawSign(tft, px - markerOffset, py - markerOffset, index);
+
+      // Draws longitude position marker
+      int apLon = (int)apparentLongitude;
+      double positionRadians = -(((((i * 30) - 15) + apLon % 30) * PI / 180)); // set progress position within 30 degree secment
+      double ppx = getRadialX(drawConstants, positionRadians, zodiacPadding);
+      double ppy = getRadialY(drawConstants, positionRadians, zodiacPadding);
       tft.drawCircle(ppx, ppy, 1, ST7735_MAGENTA);
     };
   };
