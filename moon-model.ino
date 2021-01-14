@@ -8,7 +8,7 @@
 #include <RTClib.h>
 
 // #include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
+#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735 screen
 #include <SPI.h>
 
 // Devices
@@ -17,11 +17,11 @@
 // #define TFT_POCI 11 // SDI / SDA / A4 // 11
 #define TFT_CS 10 // TCS
 #define TFT_RST 9
-#define TFT_DC 8 // RS
+#define TFT_DC 7 // RS
 // #define TFT_PICO 0 // SDI / SDA / A4 // 11
 
 // To reduce compile size & flash memory, only set 1 mode at a time.
-#define SET_UTC_TIME 1 // set the initial UTC time (only needs to be run once)
+#define SET_UTC_TIME 0 // set the initial UTC time (only needs to be run once)
 #define DEBUG 1        // prints various debug messages
 #define CALC_TEST 0    // for testing the astronomy calculations
 
@@ -35,7 +35,7 @@
 // GMT = +1 so TIMEZONE_OFFSET = -1;
 #define TIMEZONE_OFFSET 0
 
-#define UPDATE_SPEED 30 // > 1!
+#define UPDATE_SPEED 30 // > 1! (in seconds)
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -60,12 +60,13 @@ void setup()
     ; // wait for serial port to connect.
   }
 
-  if (!rtc.begin())
+#if DEBUG
+  if (rtc.begin())
   {
-    Serial.println("Couldn't find RTC");
-    while (1)
-      ;
+    Serial.println("RTC running.");
   }
+#endif
+
 #if SET_UTC_TIME
   // if (rtc.lostPower())
   // {
@@ -76,12 +77,19 @@ void setup()
   //   rtc.adjust(utcTime);
   // }
 
-  // following line sets the RTC to the date & time this sketch was compiled
+  if (!rtc.begin())
+  {
+    Serial.println("Couldn't find RTC");
+    while (1)
+      ;
+  }
+
+  // following line sets the RTC to the computer's date & time upon compile
   Serial.println("Setting Time.");
   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
-  rtc.adjust(utcTime);
   printTime(utcTime);
+  rtc.adjust(utcTime);
 #endif
 
   initialize();
@@ -135,6 +143,11 @@ void initialize()
   drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
   drawConstants.moonCenterY = (tft.height() - drawConstants.moonPadding) / 2;
   drawConstants.moonRadius = drawConstants.moonCenterX / 2;
+  Serial.println("Screen size detected: ");
+  Serial.print("Width: ");
+  Serial.println(tft.width());
+  Serial.print("Height: ");
+  Serial.println(tft.height());
 
   // Debug variables
   // Serial.println("Debug variables: ");
@@ -164,9 +177,7 @@ void drawRealTimeData()
   printTime(tm);
 #endif
 
-#if !POTS
-  LunarPhaseMeasures lunar = getLunar(tm);
-#else
+#if POTS
   // Debug with potentiometers
   int sensorIlluminationValue = analogRead(A0);
   float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
@@ -183,14 +194,16 @@ void drawRealTimeData()
   lunar.apparentLongitude = outputLongitudeValue;
   lunar.illuminatedFraction = outputIlluminationValue;
 // lunar.phaseDecimal = outputPhaseValue;
+#else
+  LunarPhaseMeasures lunar = getLunar(tm);
 #endif
 
 #if DEBUG
   printLunarMeasures(lunar);
 #endif
 
-  drawHoroscopeSign(lunar, drawConstants);
-  drawMoonToMeasurements(tm, lunar);
+  // drawHoroscopeSign(lunar, drawConstants);
+  // drawMoonToMeasurements(tm, lunar);
 }
 
 LunarPhaseMeasures getLunar(DateTime tm)
@@ -226,11 +239,11 @@ void drawHoroscopeSign(LunarPhaseMeasures lunar, DrawConstants drawConstants)
 
 void printLunarMeasures(LunarPhaseMeasures lunar)
 {
-  Serial.print("I: ");
+  Serial.print("Illumuniated fraction: ");
   Serial.println(lunar.illuminatedFraction, 4);
-  Serial.print("P: ");
+  Serial.print("Phase decimal: ");
   Serial.println(lunar.phaseDecimal, 4);
-  Serial.print("A: ");
+  Serial.print("Apparent longitude: ");
   Serial.println(lunar.apparentLongitude, 4);
 };
 
