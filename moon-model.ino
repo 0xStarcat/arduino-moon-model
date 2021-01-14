@@ -21,7 +21,7 @@
 // #define TFT_PICO 0 // SDI / SDA / A4 // 11
 
 // To reduce compile size & flash memory, only set 1 mode at a time.
-#define SET_UTC_TIME 0 // set the initial UTC time (only needs to be run once)
+#define SET_UTC_TIME 1 // set the initial UTC time (only needs to be run once)
 #define DEBUG 1        // prints various debug messages
 #define CALC_TEST 0    // for testing the astronomy calculations
 
@@ -33,7 +33,7 @@
 // EST = -5 so TIMEZONE_OFFSET = 5;
 // PST = -8 so TIMEZONE_OFFET = 8;
 // GMT = +1 so TIMEZONE_OFFSET = -1;
-#define TIMEZONE_OFFSET 5
+#define TIMEZONE_OFFSET 0
 
 #define UPDATE_SPEED 30 // > 1!
 
@@ -60,22 +60,28 @@ void setup()
     ; // wait for serial port to connect.
   }
 
-#if SET_UTC_TIME
   if (!rtc.begin())
   {
     Serial.println("Couldn't find RTC");
     while (1)
       ;
   }
+#if SET_UTC_TIME
+  // if (rtc.lostPower())
+  // {
+  //   Serial.println("RTC lost power, lets set the time!");
+  //   // following line sets the RTC to the date & time this sketch was compiled
+  //   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  //   DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
+  //   rtc.adjust(utcTime);
+  // }
 
-  if (rtc.lostPower())
-  {
-    Serial.println("RTC lost power, lets set the time!");
-    // following line sets the RTC to the date & time this sketch was compiled
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
-    rtc.adjust(utcTime);
-  }
+  // following line sets the RTC to the date & time this sketch was compiled
+  Serial.println("Setting Time.");
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
+  rtc.adjust(utcTime);
+  printTime(utcTime);
 #endif
 
   initialize();
@@ -230,7 +236,7 @@ void printLunarMeasures(LunarPhaseMeasures lunar)
 
 void printTime(DateTime tm)
 {
-  Serial.print("* ");
+  Serial.print("*Time: ");
   Serial.print(tm.month());
   Serial.print("/");
   Serial.print(tm.day());
