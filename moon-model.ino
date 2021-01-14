@@ -13,7 +13,7 @@
 
 // Devices
 // Flora does NOT draw horoscope or longitude - not enough flash memory.
-#define FLORA 1
+#define FLORA 0
 
 #if FLORA
 #include <Adafruit_NeoPixel.h>
