@@ -35,11 +35,12 @@ void DrawMoon::drawMoonLight(Adafruit_ST7735 tft, DrawConstants drawConstants, f
     }
     else
     {
+      // continue; // don't draw
       // Fill remainder black
       color = ST7735_BLACK;
     }
 
-    fillArc2(tft, drawConstants.moonCenterX, drawConstants.moonCenterY, startAngle, 60, (drawConstants.moonRadius - i), drawConstants.moonRadius, 1, color);
+    fillArc2(tft, drawConstants.moonCenterX, drawConstants.moonCenterY, startAngle, 60, (drawConstants.moonRadius - i), drawConstants.moonRadius, 0.5, color);
   }
 }
 
@@ -50,7 +51,7 @@ void DrawMoon::drawMoonLight(Adafruit_ST7735 tft, DrawConstants drawConstants, f
 //https://forum.arduino.cc/index.php?topic=413186.0
 // x,y == coords of centre of arc
 // start_angle = 0 - 359
-// seg_count = number of 3 degree segments to draw (120 => 360 degree arc)
+// seg_count = number of 3 degree segments to draw (120 = 360 degree arc)
 // rx = x axis radius
 // yx = y axis radius
 // w  = width (thickness) of arc in pixels
@@ -86,7 +87,7 @@ void DrawMoon::fillArc2(Adafruit_ST7735 tft, int x, int y, int start_angle, int 
     tft.fillTriangle(x0, y0, x1, y1, x2, y2, color);
     tft.fillTriangle(x1, y1, x2, y2, x3, y3, color);
 
-    // Copy segment end to sgement start for next segment
+    // Copy segment end to segement start for next segment
     x0 = x2;
     y0 = y2;
     x1 = x3;

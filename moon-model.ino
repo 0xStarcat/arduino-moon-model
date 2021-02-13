@@ -14,16 +14,17 @@
 // Devices
 
 // #define TFT_CLK 13  // SCK A5 // 13
-// #define TFT_POCI 11 // SDI / SDA / A4 // 11
-#define TFT_CS 10 // TCS
-#define TFT_RST 9
-#define TFT_DC 7 // RS
+// #define TFT_POCIa 11 // SDI / SDA / A4 // 11
+#define TFT_CS 18  // A4
+#define TFT_RST 17 // A3 // Or set to -1 and connect to Arduino RESET pin
+#define TFT_DC 19  // A5
 // #define TFT_PICO 0 // SDI / SDA / A4 // 11
 
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+
 // To reduce compile size & flash memory, only set 1 mode at a time.
-#define SET_UTC_TIME 0 // set the initial UTC time (only needs to be run once)
-#define DEBUG 1        // prints various debug messages
-#define CALC_TEST 0    // for testing the astronomy calculations
+#define DEBUG 1     // prints various debug messages
+#define CALC_TEST 0 // for testing the astronomy calculations
 
 // Switch to using POTS control instead of actual calculations
 #define POTS 0
@@ -35,9 +36,7 @@
 // GMT = +1 so TIMEZONE_OFFSET = -1;
 #define TIMEZONE_OFFSET 0
 
-#define UPDATE_SPEED 30 // > 1! (in seconds)
-
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+#define UPDATE_SPEED 60 // > 1! (in seconds)
 
 DrawConstants drawConstants;
 
@@ -55,42 +54,36 @@ void setup()
 {
   Serial.begin(9600);
 
+#if DEBUG
   while (!Serial)
   {
     ; // wait for serial port to connect.
   }
 
-#if DEBUG
+#endif
+
   if (rtc.begin())
   {
     Serial.println("RTC running.");
   }
-#endif
-
-#if SET_UTC_TIME
-  // if (rtc.lostPower())
-  // {
-  //   Serial.println("RTC lost power, lets set the time!");
-  //   // following line sets the RTC to the date & time this sketch was compiled
-  //   rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  //   DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
-  //   rtc.adjust(utcTime);
-  // }
-
-  if (!rtc.begin())
+  else
   {
-    Serial.println("Couldn't find RTC");
-    while (1)
-      ;
+    Serial.println("RTC not found.");
+    Serial.flush();
+    abort();
   }
 
-  // following line sets the RTC to the computer's date & time upon compile
-  Serial.println("Setting Time.");
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
-  printTime(utcTime);
-  rtc.adjust(utcTime);
-#endif
+  // deciding to set the time every upload.
+  Serial.println("Checking RTC power...");
+  if (rtc.lostPower())
+  {
+    Serial.println("RTC lost power.");
+    setTime();
+  }
+  else
+  {
+    setTime();
+  }
 
   initialize();
 };
@@ -106,9 +99,7 @@ void loop()
 
 #if CALC_TEST
     calculationTest(testHour, testDay);
-#endif
-
-#if !CALC_TEST && !SET_UTC_TIME
+#else
     drawRealTimeData();
 #endif
 
@@ -131,23 +122,21 @@ void loop()
 
 void initialize()
 {
-#if DEBUG
-  Serial.println("Init...");
-#endif
-  tft.initR(INITR_144GREENTAB); // Init ST7735R chip, green tab
+  Serial.println("Initializing.");
+  tft.initR(INITR_GREENTAB); // Init ST7735R chip, green tab
 
-  // tft.setRotation(0);
+  tft.setRotation(0);
 
   // SET GLOBAL VARIABLES after init because otherwise dimensions are bad
-  drawConstants.moonPadding = 2; // px
-  drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
-  drawConstants.moonCenterY = (tft.height() - drawConstants.moonPadding) / 2;
-  drawConstants.moonRadius = drawConstants.moonCenterX / 2;
   Serial.println("Screen size detected: ");
   Serial.print("Width: ");
   Serial.println(tft.width());
   Serial.print("Height: ");
   Serial.println(tft.height());
+  drawConstants.moonPadding = 2; // px
+  drawConstants.moonCenterX = (tft.width() - drawConstants.moonPadding) / 2;
+  drawConstants.moonCenterY = (tft.width() - drawConstants.moonPadding) / 2; // use width instead of height to keep square aspect ratio
+  drawConstants.moonRadius = drawConstants.moonCenterX / 2;
 
   // Debug variables
   // Serial.println("Debug variables: ");
@@ -164,7 +153,8 @@ void initialize()
   calculationTest(testHour, testDay);
 #endif
 
-#if !CALC_TEST && !SET_UTC_TIME
+#if !CALC_TEST
+  DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_BLACK);
   drawRealTimeData();
 #endif
 };
@@ -173,7 +163,7 @@ void drawRealTimeData()
 {
 
   DateTime tm = rtc.now();
-#if DEBUG || SET_UTC_TIME
+#if DEBUG
   printTime(tm);
 #endif
 
@@ -202,8 +192,8 @@ void drawRealTimeData()
   printLunarMeasures(lunar);
 #endif
 
-  // drawHoroscopeSign(lunar, drawConstants);
-  // drawMoonToMeasurements(tm, lunar);
+  drawHoroscopeSign(lunar, drawConstants);
+  drawMoonToMeasurements(tm, lunar);
 }
 
 LunarPhaseMeasures getLunar(DateTime tm)
@@ -215,20 +205,19 @@ LunarPhaseMeasures getLunar(DateTime tm)
 void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
 {
 
-  // DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_BLACK);
-
   // float phaseMult = lunar.phaseDecimal * 4; // fill based on phaseDecimal
   float phaseMult = lunar.illuminatedFraction * 2; // fill based on illuminatedFraction
   float radiusMultiplier = phaseMult;
   if (lunar.phaseDecimal <= 0.5)
   {
-
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 0, radiusMultiplier, ST7735_WHITE);
+    int startAngle = 30; // slight axis tilt to the right
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
   }
   else
   {
+    int startAngle = 210; // slight axis tilt to the right
     // radiusMultiplier = 4 - phaseMult; // fill based on phaseDecimal
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, 180, radiusMultiplier, ST7735_WHITE);
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
   };
 };
 
@@ -246,6 +235,16 @@ void printLunarMeasures(LunarPhaseMeasures lunar)
   Serial.print("Apparent longitude: ");
   Serial.println(lunar.apparentLongitude, 4);
 };
+
+void setTime()
+{
+  // following line sets the RTC to the date & time this sketch was compiled
+  Serial.println("Setting the time");
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  DateTime utcTime = TimeWrapper::setTimeOffset(rtc.now(), TIMEZONE_OFFSET);
+  rtc.adjust(utcTime);
+  printTime(utcTime);
+}
 
 void printTime(DateTime tm)
 {
