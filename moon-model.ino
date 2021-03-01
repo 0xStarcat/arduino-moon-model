@@ -8,8 +8,14 @@
 #include <RTClib.h>
 
 // #include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735 screen
+#include <Adafruit_ST7735.h>  // Hardware-specific library for ST7735 screen
+#include <Adafruit_DotStar.h> // lib for the dotstar LED
 #include <SPI.h>
+
+#define NUMPIXELS 30 // Number of LEDs in strip
+#define DATAPIN 41
+#define CLOCKPIN 40
+Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
 
 // Devices
 
@@ -22,8 +28,10 @@
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-// To reduce compile size & flash memory, only set 1 mode at a time.
-#define DEBUG 1     // prints various debug messages
+// Run DEBUG mode when setting up a moonstone for the first time to set the time.
+// Open serial monitor to ensure the moonstone works.
+// once time is set, re-upload with DEBUG turned off.
+#define DEBUG 0     // prints various debug messages. Sets the initial time.
 #define CALC_TEST 0 // for testing the astronomy calculations
 
 // Switch to using POTS control instead of actual calculations
@@ -34,7 +42,7 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 // EST = -5 so TIMEZONE_OFFSET = 5;
 // PST = -8 so TIMEZONE_OFFET = 8;
 // GMT = +1 so TIMEZONE_OFFSET = -1;
-#define TIMEZONE_OFFSET 0
+#define TIMEZONE_OFFSET -5 // ONLY NEEDS TO BE ACCURATE AT COMPILE TIME / LOCATION BASED ON COMPUTER CLOCK
 
 #define UPDATE_SPEED 60 // > 1! (in seconds)
 
@@ -52,6 +60,13 @@ uint16_t testHour = 0;
 
 void setup()
 {
+  // initialize digital pin 13 for LED light and turn it off
+  pinMode(13, OUTPUT);
+  digitalWrite(13, LOW);
+
+  // initialize dotstar and turn it off
+  strip.begin();
+  strip.show();
   Serial.begin(9600);
 
 #if DEBUG
@@ -80,10 +95,10 @@ void setup()
     Serial.println("RTC lost power.");
     setTime();
   }
-  else
-  {
-    setTime();
-  }
+
+#if DEBUG
+  setTime(); // Set time on debug
+#endif
 
   initialize();
 };
@@ -147,14 +162,13 @@ void initialize()
   // Serial.print("Moon radius: ");
   // Serial.println(drawConstants.moonRadius);
 
-  tft.fillScreen(COLOR_DARK_SKY_BLUE);
+  DrawMoon::clearScreen(tft);
 
 #if CALC_TEST
   calculationTest(testHour, testDay);
 #endif
 
 #if !CALC_TEST
-  DrawMoon::drawMoonOutline(tft, drawConstants, ST7735_BLACK);
   drawRealTimeData();
 #endif
 };
@@ -168,22 +182,24 @@ void drawRealTimeData()
 #endif
 
 #if POTS
+  LunarPhaseMeasures lunar;
   // Debug with potentiometers
   int sensorIlluminationValue = analogRead(A0);
   float outputIlluminationValue = map(sensorIlluminationValue, 0, 1023, 0, 1000);
   outputIlluminationValue = (outputIlluminationValue / 1000) - 0.05;
+  lunar.illuminatedFraction = outputIlluminationValue;
+
+  // For A1 Choose either phaseValue (moon phase) or apparent longitude (zodiac sign) to alter
 
   // int sensorPhaseValue = analogRead(A1);
   // float outputPhaseValue = map(sensorPhaseValue, 0, 1023, 0, 1000);
   // outputPhaseValue = (outputPhaseValue / 1000) - 0.05;
+  // lunar.phaseDecimal = outputPhaseValue;
 
   int sensorApparentLongitude = analogRead(A1);
   float outputLongitudeValue = map(sensorApparentLongitude, 0, 1023, 0, 360);
-
-  LunarPhaseMeasures lunar;
   lunar.apparentLongitude = outputLongitudeValue;
-  lunar.illuminatedFraction = outputIlluminationValue;
-// lunar.phaseDecimal = outputPhaseValue;
+
 #else
   LunarPhaseMeasures lunar = getLunar(tm);
 #endif
@@ -192,6 +208,8 @@ void drawRealTimeData()
   printLunarMeasures(lunar);
 #endif
 
+  DrawMoon::clearScreen(tft);
+  DrawMoon::drawMoonOutline(tft, drawConstants, MOON_BLACK);
   drawHoroscopeSign(lunar, drawConstants);
   drawMoonToMeasurements(tm, lunar);
 }
@@ -208,16 +226,17 @@ void drawMoonToMeasurements(DateTime tm, LunarPhaseMeasures lunar)
   // float phaseMult = lunar.phaseDecimal * 4; // fill based on phaseDecimal
   float phaseMult = lunar.illuminatedFraction * 2; // fill based on illuminatedFraction
   float radiusMultiplier = phaseMult;
+  int angleModier = 0; // the offset to make the moon slanted
   if (lunar.phaseDecimal <= 0.5)
   {
-    int startAngle = 30; // slight axis tilt to the right
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
+    int startAngle = 0; // + 30 // slight axis tilt to the right
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle + angleModier, radiusMultiplier, ST7735_WHITE);
   }
   else
   {
-    int startAngle = 210; // slight axis tilt to the right
+    int startAngle = 180; // + 30 // slight axis tilt to the right
     // radiusMultiplier = 4 - phaseMult; // fill based on phaseDecimal
-    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle, radiusMultiplier, ST7735_WHITE);
+    DrawMoon::drawMoonLight(tft, drawConstants, lunar.illuminatedFraction, startAngle + angleModier, radiusMultiplier, ST7735_WHITE);
   };
 };
 
