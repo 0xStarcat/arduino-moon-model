@@ -3,7 +3,7 @@
 // http://www.barth-dev.de/online/rgb565-color-picker/
 // rgb565
 
-#define COLOR_DARK_SKY_BLUE 258
+#define COLOR_DARK_SKY_BLUE 0x422A
 #define MOON_BLACK 0x10A3
 
 struct DrawConstants

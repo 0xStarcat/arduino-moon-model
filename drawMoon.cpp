@@ -319,7 +319,7 @@ void clearZodiacArea(Adafruit_ST7735 tft, DrawConstants drawConstants)
 
 void DrawMoon::clearScreen(Adafruit_ST7735 tft)
 {
-  tft.fillScreen(ST7735_BLACK);
+  tft.fillScreen(COLOR_DARK_SKY_BLUE);
 }
 
 void DrawMoon::drawSignAtPosition(Adafruit_ST7735 tft, DrawConstants drawConstants, float apparentLongitude)
