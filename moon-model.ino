@@ -20,9 +20,9 @@ Adafruit_DotStar strip(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
 // Devices
 // TFT SCREEN
 /////////////
-#define TFT_CS 17  // A3
+#define TFT_CS 19  // A5
 #define TFT_RST 18 // A4 // Or set to -1 and connect to Arduino RESET pin
-#define TFT_DC 19  // A5
+#define TFT_DC 17  // A3
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
